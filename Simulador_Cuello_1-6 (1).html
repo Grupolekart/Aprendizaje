@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Examen – Anatomía del Cuello</title>
+  <style>
+    :root {
+      /* --- Variables de Color Modo Claro (Default) --- */
+      --bg-gradient-start: #667eea;
+      --bg-gradient-end: #764ba2;
+      --container-bg: rgba(255, 255, 255, .95);
+      --text-primary: #2d3748;
+      --text-secondary: #4a5568;
+      --text-muted: #718096;
+      --border-color: #e2e8f0;
+      --card-bg: #fff;
+      --button-bg: #f7fafc;
+      --button-hover-bg: #edf2f7;
+      --button-secondary-bg: #e2e8f0;
+      --button-secondary-hover-bg: #cbd5e0;
+      --correct-bg: #e6fffa;
+      --correct-border: #38a169;
+      --correct-text: #2f855a;
+      --incorrect-bg: #fff5f5;
+      --incorrect-border: #e53e3e;
+      --incorrect-text: #c53030;
+    }
+
+    .dark-mode {
+      /* --- Variables de Color Modo Oscuro --- */
+      --bg-gradient-start: #1a202c;
+      --bg-gradient-end: #2d3748;
+      --container-bg: rgba(45, 55, 72, .95);
+      --text-primary: #e2e8f0;
+      --text-secondary: #cbd5e0;
+      --text-muted: #a0aec0;
+      --border-color: #4a5568;
+      --card-bg: #2d3748;
+      --button-bg: #4a5568;
+      --button-hover-bg: #2d3748;
+      --button-secondary-bg: #4a5568;
+      --button-secondary-hover-bg: #718096;
+      --correct-bg: #2f855a;
+      --correct-border: #38a169;
+      --correct-text: #e6fffa;
+      --incorrect-bg: #c53030;
+      --incorrect-border: #e53e3e;
+      --incorrect-text: #fff5f5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: var(--text-primary);
+      transition: background .3s ease;
+    }
+    .container {
+      background: var(--container-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+      transition: all .3s ease;
+      position: relative;
+    }
+    /* --- BOTÓN DE MODO DÍA/NOCHE --- */
+    #theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--button-secondary-bg);
+        color: var(--text-secondary);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    #theme-toggle:hover {
+        background: var(--button-secondary-hover-bg);
+        transform: scale(1.1) rotate(15deg);
+    }
+
+    .main-header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .main-header-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .header { text-align: center; margin-bottom: 30px; }
+    .title { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; color: var(--text-primary); }
+    .subtitle { color: var(--text-muted); font-size: 1.1rem; }
+    
+    .timer-setup { margin: 30px 0; text-align: center; }
+    .timer-setup label { font-weight: 600; margin-right: 10px; font-size: 1.1rem; color: var(--text-secondary); }
+    .timer-setup select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 2px solid var(--border-color);
+        background-color: var(--button-bg);
+        color: var(--text-primary);
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    .exam-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    #timer-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bg-gradient-end);
+        background: var(--button-bg);
+        padding: 5px 15px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+    #reset-exam-btn {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        background: var(--button-secondary-bg);
+        color: var(--text-secondary);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    #reset-exam-btn:hover { background: var(--button-secondary-hover-bg); transform: rotate(90deg); }
+
+    .progress-container { margin-bottom: 30px; }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      border-radius: 10px;
+      transition: width .3s ease;
+    }
+    .progress-text { text-align: center; color: var(--text-secondary); font-weight: 600; }
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      margin-bottom: 30px;
+      border: 1px solid var(--border-color);
+    }
+    .question-number { color: var(--bg-gradient-start); font-size: .9rem; font-weight: 600; margin-bottom:15px; }
+    .question-text { font-size:1.3rem; line-height:1.6; font-weight:600; margin-bottom:25px; color: var(--text-primary); }
+    .options { display:grid; gap:12px; }
+    .option {
+      background:var(--button-bg);
+      border:2px solid var(--border-color);
+      border-radius:12px;
+      padding:18px 20px;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:flex;
+      align-items:center;
+      font-size:1rem;
+      color:var(--text-secondary);
+      text-align: left;
+    }
+    .option:hover:not(.disabled) {
+      border-color:var(--bg-gradient-start);
+      background:var(--button-hover-bg);
+      transform:translateY(-2px);
+      box-shadow:0 4px 20px rgba(102,126,234,0.15);
+    }
+    .option.disabled { pointer-events:none; }
+    .option.correct { border-color:var(--correct-border)!important; background:var(--correct-bg)!important; color:var(--correct-text)!important; }
+    .option.incorrect { border-color:var(--incorrect-border)!important; background:var(--incorrect-bg)!important; color:var(--incorrect-text)!important; }
+    .option-letter {
+      background:var(--bg-gradient-start);
+      color:white;
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      margin-right:15px;
+      font-size:.9rem;
+      flex-shrink: 0;
+    }
+    .navigation { display:flex; justify-content:space-between; align-items:center; margin-top:30px; }
+    .btn {
+      background:linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color:white;
+      border:none;
+      padding:12px 24px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:1rem;
+      font-weight:600;
+      transition:all .3s ease;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-secondary { background: var(--button-secondary-bg); color: var(--text-secondary); }
+    .btn-secondary:hover:not(:disabled) { background: var(--button-secondary-hover-bg); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .btn:hover:not(:disabled) {
+      transform:translateY(-2px);
+      box-shadow:0 8px 25px rgba(102,126,234,0.3);
+    }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow: none;}
+    .hidden { display:none; }
+    
+    .results { text-align:center; padding:40px 20px; }
+    .results h2 { font-size:2.2rem; margin-bottom:20px; color: var(--text-primary); }
+    .score {
+      font-size:4rem;
+      font-weight:800;
+      margin:30px 0;
+      background:linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .score-details {
+      background: var(--button-bg);
+      border-radius:16px;
+      padding:25px;
+      margin:30px 0;
+      border:1px solid var(--border-color);
+    }
+    .score-item { display:flex; justify-content:space-between; margin:10px 0; font-size:1.1rem; }
+    .score-label { color: var(--text-secondary); }
+    .score-value { font-weight:600; color: var(--text-primary); }
+    .status.passed { color:#38a169; }
+    .status.failed { color:#e53e3e; }
+
+    #review-section h3 {
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    .incorrect-answer-item {
+        background: var(--incorrect-bg);
+        border: 1px solid var(--incorrect-border);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    .incorrect-answer-item p { margin-bottom: 8px; line-height: 1.5; color: var(--text-primary); }
+    .incorrect-answer-item .user-answer { color: var(--incorrect-text); }
+    .incorrect-answer-item .correct-answer { color: var(--correct-text); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button id="theme-toggle" title="Cambiar Tema">🌓</button>
+    <div class="main-header">
+        <h2 class="main-header-title">Anatomía Humana — Región del Cuello</h2>
+    </div>
+
+    <div id="start-screen">
+      <div class="header">
+        <h1 class="title">📝 Examen de Selección Múltiple</h1>
+        <p class="subtitle">Guía de estudio basada en “Cuello 1–6”: músculos, laringe, vasos, nervios y columna cervical</p>
+      </div>
+      <div class="timer-setup">
+          <label for="time-select">Selecciona el tiempo:</label>
+          <select id="time-select">
+              <option value="15" selected>15 Minutos</option>
+              <option value="20">20 Minutos</option>
+              <option value="25">25 Minutos</option>
+              <option value="30">30 Minutos</option>
+              <option value="35">35 Minutos</option>
+              <option value="40">40 Minutos</option>
+              <option value="45">45 Minutos</option>
+              <option value="50">50 Minutos</option>
+              <option value="55">55 Minutos</option>
+              <option value="60">60 Minutos</option>
+          </select>
+      </div>
+      <div style="text-align:center;">
+        <p id="start-text" style="margin:20px 0;color: var(--text-muted);font-size:1.1rem;"></p>
+        <button id="start-btn" class="btn">🚀 Comenzar Examen</button>
+      </div>
+    </div>
+
+    <div id="exam-screen" class="hidden">
+      <button id="reset-exam-btn" title="Reiniciar Examen">🔄</button>
+       <div class="exam-header">
+         <h2 style="color: var(--text-muted);">Examen en Curso</h2>
+         <div id="timer-display">--:--</div>
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text"></div>
+      </div>
+      <div class="question-card">
+        <div class="question-number" id="question-number"></div>
+        <div class="question-text" id="question-text"></div>
+        <div class="options" id="options"></div>
+      </div>
+      <div class="navigation">
+        <button class="btn btn-secondary" id="prev-btn">← Anterior</button>
+        <button class="btn" id="next-btn">Siguiente →</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="hidden">
+      <div class="results">
+        <h2 id="results-title">¡Examen Completado!</h2>
+        <div class="score" id="final-score"></div>
+        <div class="score-details">
+          <div class="score-item">
+            <span class="score-label">Respuestas correctas:</span>
+            <span class="score-value" id="correct-count"></span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Respuestas incorrectas:</span>
+            <span class="score-value" id="incorrect-count"></span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Total de preguntas:</span>
+            <span class="score-value" id="total-count"></span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Estado:</span>
+            <span class="score-value status" id="exam-status"></span>
+          </div>
+        </div>
+        <button id="restart-btn" class="btn">🔄 Reiniciar Examen</button>
+
+        <div id="review-section" class="hidden" style="margin-top: 40px;">
+            <h3>Revisión de Respuestas Incorrectas</h3>
+            <div id="incorrect-answers-list" style="margin-top: 20px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    // --- BANCO DE PREGUNTAS ---
+    // AGREGA TUS PREGUNTAS AQUÍ. Sigue el formato: { question: "Texto de la pregunta", options: ["Opción A", "Opción B", "Opción C"], correct: índice_de_la_opción_correcta (0, 1, o 2) },
+    let questions = [
+        { question: "¿Cuál es la función principal del cuello como región anatómica?", options: ["Servir únicamente como soporte óseo rígido para la cabeza.", "Conectar el cráneo con el tronco y extremidades superiores y actuar como conducto para estructuras entre estas áreas.", "Alojar exclusivamente al sistema digestivo superior."], correct: 1 },
+        { question: "¿Cuál de los siguientes órganos se aloja en el cuello?", options: ["Estómago.", "Laringe.", "Hígado."], correct: 1 },
+        { question: "¿Qué estructuras realizan principalmente la irrigación y el drenaje venoso del cuello?", options: ["Arterias vertebrales y venas safenas.", "Arterias carótidas y venas yugulares.", "Arterias coronarias y venas pulmonares."], correct: 1 },
+        { question: "¿Qué estructura protege a la médula espinal en el cuello?", options: ["Canal vertebral formado por las vértebras cervicales.", "Esternón.", "Escápula."], correct: 0 },
+        { question: "¿Cuál NO es un espacio del cuello descrito en el documento?", options: ["Espacio vertebral.", "Espacio visceral.", "Espacio diafragmático."], correct: 2 },
+        { question: "¿Qué órgano del espacio visceral transporta alimentos de la boca al estómago?", options: ["Tráquea.", "Esófago.", "Laringe."], correct: 1 },
+        { question: "¿Qué triángulo del cuello se ubica en la parte frontal y contiene subtriángulos?", options: ["Triángulo posterior.", "Triángulo anterior.", "Triángulo occipital."], correct: 1 },
+        { question: "¿Qué estructura típica se encuentra en el triángulo submandibular?", options: ["Plexo braquial.", "Glándulas salivales.", "Proceso odontoides."], correct: 1 },
+        { question: "¿Qué contiene el triángulo submentoniano?", options: ["Linfonodos.", "Arterias coronarias.", "Meniscos."], correct: 0 },
+        { question: "¿Qué músculos predominan en el triángulo muscular del cuello?", options: ["Suprahioideos.", "Infrahioideos.", "Masticadores."], correct: 1 },
+        { question: "¿Qué estructuras destacadas contiene el triángulo carotídeo?", options: ["Arterias carótidas y nervio vago.", "Nervio facial y glándula parótida.", "Nervio óptico y arteria oftálmica."], correct: 0 },
+        { question: "El triángulo occipital se ubica en:", options: ["La parte posterior del cuello.", "La base del cráneo anterior.", "La región supraclavicular interna."], correct: 0 },
+        { question: "¿Qué estructura nerviosa importante puede encontrarse en el triángulo omoclavicular?", options: ["Plexo braquial.", "Plexo solar.", "Plexo lumbar."], correct: 0 },
+        { question: "¿Qué grupo muscular se encuentra por encima del hioides?", options: ["Infrahioideos.", "Suprahioideos.", "Paravertebrales torácicos."], correct: 1 },
+        { question: "¿Qué función realiza el músculo estilohioideo?", options: ["Eleva y tira del hioides hacia atrás.", "Desciende la tiroides.", "Flexiona el cuello lateralmente."], correct: 0 },
+        { question: "¿Cuál de los siguientes músculos suprahioideos tiene dos vientres?", options: ["Genihioideo.", "Digástrico.", "Milohioideo."], correct: 1 },
+        { question: "¿Qué función cumple el milohioideo?", options: ["Forma el suelo de la boca y ayuda en la deglución.", "Desciende el hioides y la laringe.", "Rota la cabeza."], correct: 0 },
+        { question: "¿Qué músculo suprahioideo eleva el hioides y lo lleva hacia adelante?", options: ["Genihioideo.", "Esternotiroideo.", "Omohioideo."], correct: 0 },
+        { question: "¿Cuál NO pertenece al grupo de los infrahioideos?", options: ["Esternotiroideo.", "Tirohioideo.", "Estilohioideo."], correct: 2 },
+        { question: "¿Qué función tiene el omohioideo?", options: ["Tira el hioides hacia abajo y ayuda a estabilizarlo.", "Eleva la mandíbula.", "Extiende la columna cervical."], correct: 0 },
+        { question: "El esternohioideo:", options: ["Desciende el hioides y la laringe.", "Eleva la tiroides.", "Rota el atlas."], correct: 0 },
+        { question: "El tirohioideo:", options: ["Conecta la tiroides con el hioides y regula la posición de la laringe.", "Se inserta en el proceso odontoides.", "Inerva el diafragma."], correct: 0 },
+        { question: "El esternotiroideo:", options: ["Desciende la tiroides y la laringe.", "Eleva el hioides y la lengua.", "Abduce las cuerdas vocales."], correct: 0 },
+        { question: "¿Cuántos cartílagos componen la laringe según el documento?", options: ["Nueve.", "Siete.", "Cinco."], correct: 0 },
+        { question: "¿Cuál es el cartílago más grande de la laringe?", options: ["Cricoides.", "Tiroides.", "Epiglótico."], correct: 1 },
+        { question: "¿Qué cartílago evita la entrada de alimentos a las vías respiratorias durante la deglución?", options: ["Aritenoides.", "Corniculado.", "Epiglótico."], correct: 2 },
+        { question: "¿Qué cartílago forma un anillo completo alrededor de la tráquea?", options: ["Tiroides.", "Cricoides.", "Cuneiforme."], correct: 1 },
+        { question: "Los cartílagos aritenoides permiten principalmente:", options: ["La apertura y cierre de las cuerdas vocales.", "El soporte del istmo tiroideo.", "La inserción del ligamento alar."], correct: 0 },
+        { question: "La tiroides consta de:", options: ["Un lóbulo único.", "Dos lóbulos conectados por un istmo.", "Tres lóbulos separados."], correct: 1 },
+        { question: "¿Qué hormonas tiroideas menciona el documento?", options: ["T3 y T4.", "TSH y ACTH.", "ADH y oxitocina."], correct: 0 },
+        { question: "¿Cuál NO es una función regulada por las hormonas tiroideas según el texto?", options: ["Metabolismo y temperatura.", "Crecimiento y desarrollo.", "Filtración glomerular renal específica."], correct: 2 },
+        { question: "El hueso hioides:", options: ["Se articula directamente con el cráneo.", "No se articula con otros huesos y tiene forma de “U”.", "Es parte de la columna cervical."], correct: 1 },
+        { question: "¿Cuál es una función principal del hioides?", options: ["Punto de anclaje para músculos de la lengua y suprahioideos.", "Proteger el bulbo raquídeo.", "Formar el canal vertebral."], correct: 0 },
+        { question: "¿Cuántas vértebras conforman la columna cervical?", options: ["Cinco (C1–C5).", "Siete (C1–C7).", "Ocho (C1–C8)."], correct: 1 },
+        { question: "¿Cuál es la principal diferencia entre vértebras cervicales típicas y atípicas?", options: ["Las típicas son C3–C6, mientras C1, C2 y C7 son atípicas.", "Todas las cervicales son atípicas.", "Solo C1 y C2 son típicas."], correct: 0 },
+        { question: "¿Qué característica es típica del cuerpo vertebral cervical?", options: ["Gran tamaño como en las lumbares.", "Presencia de apófisis unciformes en los bordes laterales.", "Ausencia de pedículos."], correct: 1 },
+        { question: "¿Qué elemento distintivo tienen los procesos transversos cervicales?", options: ["Foramen transverso.", "Canal del nervio facial.", "Apófisis estiloides."], correct: 0 },
+        { question: "La forma del foramen vertebral en cervicales es:", options: ["Circular pequeño.", "Triangular y grande.", "Ovalado y estrecho."], correct: 1 },
+        { question: "Los procesos espinosos de C3–C5 suelen ser:", options: ["Largos y únicos.", "Cortos y bífidos.", "Ausentes."], correct: 1 },
+        { question: "El atlas (C1) se caracteriza por:", options: ["Tener gran cuerpo vertebral.", "Carecer de cuerpo vertebral y proceso espinoso.", "Poseer el proceso odontoides."], correct: 1 },
+        { question: "La articulación entre atlas y axis permite principalmente:", options: ["Flexión y extensión (asentir).", "Rotación de la cabeza (decir “no”).", "Inclinación lateral estricta."], correct: 1 },
+        { question: "El “diente” del axis está sostenido por:", options: ["Ligamento transverso.", "Ligamento interespinoso.", "Ligamento cervical transverso (arterial)."], correct: 0 },
+        { question: "C7 se distingue por:", options: ["Foramen transverso grande con arteria vertebral.", "Proceso espinoso más largo y prominente.", "Ausencia de proceso espinoso."], correct: 1 },
+        { question: "¿Entre cuáles vértebras NO existe disco intervertebral?", options: ["Entre C1 y C2.", "Entre C5 y C6.", "Entre C6 y C7."], correct: 0 },
+        { question: "El núcleo pulposo del disco intervertebral actúa como:", options: ["Una estructura de anclaje muscular.", "Un amortiguador.", "Un ligamento longitudinal."], correct: 1 },
+        { question: "El ligamento longitudinal anterior (LLA) limita principalmente:", options: ["Hiperflexión.", "Hiperextensión.", "Rotación excesiva atlantoaxoidea."], correct: 1 },
+        { question: "El ligamento longitudinal posterior (LLP) ayuda a prevenir:", options: ["Hernias del núcleo pulposo.", "Luxaciones de hombro.", "Fracturas de hioides."], correct: 0 },
+        { question: "¿Cuál de los siguientes es un ligamento continuo de la columna cervical?", options: ["Ligamento alar.", "Ligamento amarillo (ligamentum flavum).", "Ligamento del vértice del diente."], correct: 1 },
+        { question: "¿Cuál es un ligamento “único” de la región craneocervical mencionado?", options: ["Intertransverso.", "Alar.", "Interespinoso."], correct: 1 },
+        { question: "El ligamento del vértice del diente conecta:", options: ["Diente del axis con cóndilos occipitales.", "Diente del axis con foramen magno.", "Atlas con cuerpo de C7."], correct: 1 },
+        { question: "Una función clave de la columna cervical es:", options: ["Exclusivamente la hemopoyesis.", "Soporte de cabeza y cuello y protección de la médula espinal.", "Digestión de carbohidratos."], correct: 1 },
+        { question: "¿Qué plexos nerviosos se relacionan con la inervación de cabeza, cuello y brazos?", options: ["Plexo cervical y plexo braquial.", "Plexo solar y plexo sacro.", "Plexo coccígeo y plexo pudendo."], correct: 0 },
+        { question: "Las arterias carótidas comunes se dividen en:", options: ["Vertebrales y subclavias.", "Interna y externa a nivel del cartílago tiroides.", "Basilar y cerebral media."], correct: 1 },
+        { question: "¿Cuál es una rama de la arteria carótida externa indicada en el texto?", options: ["Arteria tiroidea superior.", "Arteria cerebral posterior.", "Arteria basilar."], correct: 0 },
+        { question: "La arteria faríngea ascendente irriga:", options: ["Faringe, músculos prevertebrales, oído medio y meninges craneales.", "Miocardio.", "Páncreas."], correct: 0 },
+        { question: "¿Qué arteria irriga la región supraclavicular según el documento?", options: ["Arteria supraclavicular.", "Arteria femoral.", "Arteria radial."], correct: 0 },
+        { question: "Las arterias vertebrales ascienden por:", options: ["Conducto auditivo interno.", "Forámenes transversos de las vértebras cervicales.", "Canal inguinal."], correct: 1 },
+        { question: "Al unirse intracranealmente, las arterias vertebrales contribuyen a formar:", options: ["Arteria basilar.", "Arteria carótida interna.", "Arteria subclavia."], correct: 0 },
+        { question: "El tronco tirocervical se origina de:", options: ["Arteria subclavia.", "Arteria carótida externa.", "Arteria vertebral."], correct: 0 },
+        { question: "Una rama del tronco tirocervical que irriga la glándula tiroides es:", options: ["Arteria tiroidea inferior.", "Arteria cerebral media.", "Arteria yugular inferior."], correct: 0 },
+        { question: "La arteria cervical transversa irriga principalmente:", options: ["Trapecio y esternocleidomastoideo.", "Diafragma y psoas.", "Deltoides y glúteo mayor."], correct: 0 },
+        { question: "¿Cuál vena drena estructuras profundas de cabeza y cuello y se une a la subclavia?", options: ["Yugular interna.", "Yugular externa.", "Vena safena magna."], correct: 0 },
+        { question: "La yugular externa drena principalmente:", options: ["Estructuras superficiales del cuello.", "Cavidad abdominal.", "Médula espinal lumbar."], correct: 0 },
+        { question: "¿Cuáles venas drenan la glándula tiroides?", options: ["Tiroidea inferior, media y superior.", "Basilar y vertebrales.", "Carótida interna y externa."], correct: 0 },
+        { question: "El plexo cervical está constituido por raíces:", options: ["C1–C5.", "C6–T1.", "T2–T6."], correct: 0 },
+        { question: "¿Cuál de los siguientes es un ramo sensitivo del plexo cervical?", options: ["Nervio frénico.", "Nervio auricular mayor.", "Asa cervical."], correct: 1 },
+        { question: "¿Qué ramo sensitivo inerva la piel sobre el triángulo anterior del cuello?", options: ["Nervio cervical transverso.", "Nervio hipogloso.", "Nervio accesorio."], correct: 0 },
+        { question: "¿Cuál de los siguientes es un ramo motor del plexo cervical?", options: ["Nervio occipital menor.", "Nervio frénico.", "Nervio auricular mayor."], correct: 1 },
+        { question: "La asa cervical inerva principalmente:", options: ["Músculos infrahioideos.", "Músculos maseteros.", "Músculos extraoculares."], correct: 0 },
+        { question: "¿Qué nervio craneal inerva esternocleidomastoideo y trapecio?", options: ["Vago (X).", "Accesorio (XI).", "Hipogloso (XII)."], correct: 1 },
+        { question: "¿Qué nervio craneal inerva los músculos de la lengua?", options: ["Vago (X).", "Accesorio (XI).", "Hipogloso (XII)."], correct: 2 },
+        { question: "¿Cuál de los siguientes nervios contribuye a la inervación visceral y cardiopulmonar?", options: ["Vago (X).", "Frénico.", "Auricular mayor."], correct: 0 },
+        { question: "¿Qué función principal realiza el nervio frénico?", options: ["Inervar la piel del cuello.", "Inervar el diafragma.", "Inervar los músculos suprahioideos."], correct: 1 },
+        { question: "¿Qué ramos sensitivos del plexo cervical inervan piel del cuello y hombro?", options: ["Supraclaviculares.", "Intercostales.", "Glúteos."], correct: 0 },
+        { question: "¿Cuál enunciado describe correctamente una función global de la columna cervical?", options: ["Solo movilidad, sin protección.", "Movilidad amplia, soporte y protección de médula y nervios cervicales.", "Únicamente base para inserciones musculares."], correct: 1 }
+    ];
+    // --- VARIABLES GLOBALES ---
+    let currentQuestionIndex;
+    let userAnswers;
+    let timerInterval;
+    let shuffledQuestions = [];
+    // --- ELEMENTOS DEL DOM ---
+    const startScreen = document.getElementById('start-screen');
+    const examScreen = document.getElementById('exam-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const startBtn = document.getElementById('start-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const resetExamBtn = document.getElementById('reset-exam-btn');
+    const timeSelect = document.getElementById('time-select');
+    const startText = document.getElementById('start-text');
+    const timerDisplay = document.getElementById('timer-display');
+    const questionNumberEl = document.getElementById('question-number');
+    const questionTextEl = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const resultsTitle = document.getElementById('results-title');
+    const correctCountEl = document.getElementById('correct-count');
+    const incorrectCountEl = document.getElementById('incorrect-count');
+    const totalCountEl = document.getElementById('total-count');
+    const finalScoreEl = document.getElementById('final-score');
+    const examStatusEl = document.getElementById('exam-status');
+    const reviewSection = document.getElementById('review-section');
+    const incorrectAnswersList = document.getElementById('incorrect-answers-list');
+    const themeToggle = document.getElementById('theme-toggle'); // **NUEVO**
+    const body = document.body; // **NUEVO**
+
+    // --- FUNCIONES ---
+
+    // **NUEVA FUNCIÓN PARA CAMBIAR EL TEMA**
+    function toggleTheme() {
+        body.classList.toggle('dark-mode');
+        // Guardar la preferencia del usuario en localStorage
+        if (body.classList.contains('dark-mode')) {
+            localStorage.setItem('theme', 'dark-mode');
+            themeToggle.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light-mode');
+            themeToggle.textContent = '🌓';
+        }
+    }
+
+    // **NUEVA FUNCIÓN PARA CARGAR EL TEMA GUARDADO**
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark-mode') {
+            body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️';
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggle.textContent = '🌓';
+        }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function randomizeQuestionOptions() {
+        shuffledQuestions = JSON.parse(JSON.stringify(questions));
+        shuffledQuestions.forEach(q => {
+            const correctAnswerText = q.options[q.correct];
+            shuffleArray(q.options);
+            const newCorrectIndex = q.options.findIndex(option => option === correctAnswerText);
+            q.correct = newCorrectIndex;
+        });
+    }
+
+    function initializeApp() {
+        if (questions.length > 0) {
+            startText.textContent = `Prepárate con ${questions.length} preguntas.`;
+            startBtn.disabled = false;
+        } else {
+            startText.textContent = 'No hay preguntas cargadas. Agrega preguntas en el array "questions" para comenzar.';
+            startBtn.disabled = true;
+        }
+        startBtn.addEventListener('click', startExam);
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', prevQuestion);
+        restartBtn.addEventListener('click', restartExam);
+        resetExamBtn.addEventListener('click', restartExam);
+        themeToggle.addEventListener('click', toggleTheme); // **NUEVO**
+        loadTheme(); // **NUEVO**
+    }
+
+    function startExam() {
+      randomizeQuestionOptions();
+      currentQuestionIndex = 0;
+      userAnswers = new Array(shuffledQuestions.length).fill(null);
+      startScreen.classList.add('hidden');
+      resultsScreen.classList.add('hidden');
+      examScreen.classList.remove('hidden');
+      reviewSection.classList.add('hidden');
+      const durationMinutes = parseInt(timeSelect.value, 10);
+      startTimer(durationMinutes);
+      showQuestion();
+    }
+    
+    function showQuestion() {
+        const q = shuffledQuestions[currentQuestionIndex];
+        if (!q) return; 
+
+        updateProgress();
+        questionNumberEl.textContent = `Pregunta ${currentQuestionIndex + 1}`;
+        questionTextEl.textContent = q.question;
+        optionsContainer.innerHTML = '';
+        const answered = userAnswers[currentQuestionIndex] !== null;
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + idx)}</span>${opt}`;
+            btn.onclick = () => selectOption(idx);
+            
+            if (answered) {
+              btn.classList.add('disabled');
+                if (idx === q.correct) {
+                    btn.classList.add('correct');
+                } else if (idx === userAnswers[currentQuestionIndex]) {
+                    btn.classList.add('incorrect');
+                }
+            }
+            optionsContainer.appendChild(btn);
+        });
+        prevBtn.disabled = currentQuestionIndex === 0;
+        nextBtn.textContent = (currentQuestionIndex === shuffledQuestions.length - 1) ? 'Finalizar Examen' : 'Siguiente →';
+    }
+
+    function selectOption(selectedIndex) {
+      if (userAnswers[currentQuestionIndex] !== null) return; 
+      userAnswers[currentQuestionIndex] = selectedIndex;
+      showQuestion();
+    }
+    
+    function nextQuestion() {
+      if (currentQuestionIndex < shuffledQuestions.length - 1) {
+        currentQuestionIndex++;
+        showQuestion();
+      } else {
+        showResults("¡Examen Completado!");
+      }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    }
+
+    function showResults(title) {
+        clearInterval(timerInterval);
+        examScreen.classList.add('hidden');
+        resultsScreen.classList.remove('hidden');
+
+        resultsTitle.textContent = title;
+        const correctCount = userAnswers.filter((answer, index) => answer === shuffledQuestions[index].correct).length;
+        const totalAnswered = userAnswers.filter(answer => answer !== null).length;
+        const incorrectCount = totalAnswered - correctCount;
+        const score = shuffledQuestions.length > 0 ? Math.round((correctCount / shuffledQuestions.length) * 100) : 0;
+        const passMark = 85;
+        correctCountEl.textContent = correctCount;
+        incorrectCountEl.textContent = incorrectCount;
+        totalCountEl.textContent = shuffledQuestions.length;
+        finalScoreEl.textContent = `${score}%`;
+        if (score >= passMark) {
+            examStatusEl.textContent = 'Aprobado';
+            examStatusEl.className = 'score-value status passed';
+        } else {
+            examStatusEl.textContent = 'Reprobado';
+            examStatusEl.className = 'score-value status failed';
+        }
+        
+        displayIncorrectAnswers();
+    }
+
+    function displayIncorrectAnswers() {
+        incorrectAnswersList.innerHTML = '';
+        const incorrectAnswers = [];
+
+        userAnswers.forEach((answer, index) => {
+            if (answer !== null && answer !== shuffledQuestions[index].correct) {
+                const q = shuffledQuestions[index];
+                incorrectAnswers.push({
+                    questionNumber: index + 1,
+                    question: q.question,
+                    userAnswer: q.options[answer],
+                    correctAnswer: q.options[q.correct]
+                });
+            }
+        });
+        if (incorrectAnswers.length > 0) {
+            reviewSection.classList.remove('hidden');
+            incorrectAnswers.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'incorrect-answer-item';
+                itemEl.innerHTML = `
+                    <p><strong>Pregunta ${item.questionNumber}:</strong> ${item.question}</p>
+                    <p class="user-answer"><strong>Tu respuesta:</strong> ${item.userAnswer}</p>
+                    <p class="correct-answer"><strong>Respuesta correcta:</strong> ${item.correctAnswer}</p>
+                `;
+                incorrectAnswersList.appendChild(itemEl);
+            });
+        } else {
+            reviewSection.classList.add('hidden');
+        }
+    }
+
+    function restartExam() {
+        clearInterval(timerInterval);
+        startScreen.classList.remove('hidden');
+        examScreen.classList.add('hidden');
+        resultsScreen.classList.add('hidden');
+        reviewSection.classList.add('hidden');
+        initializeApp(); // Re-inicializamos para verificar si hay preguntas
+    }
+
+    function startTimer(minutes) {
+        let timeInSeconds = minutes * 60;
+        timerInterval = setInterval(() => {
+            if (timeInSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = "00:00";
+                showResults("¡Se acabó el tiempo!");
+                return;
+              }
+
+            timeInSeconds--;
+            const remMinutes = Math.floor(timeInSeconds / 60);
+            const remSeconds = timeInSeconds % 60;
+            timerDisplay.textContent = `${String(remMinutes).padStart(2, '0')}:${String(remSeconds).padStart(2, '0')}`;
+        }, 1000);
+    }
+    
+    function updateProgress() {
+      const percentage = shuffledQuestions.length > 0 ? ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100 : 0;
+      progressFill.style.width = percentage + '%';
+      progressText.textContent = `Pregunta ${currentQuestionIndex + 1} de ${shuffledQuestions.length}`;
+    }
+
+    // --- INICIAR APP ---
+    initializeApp();
+});
+</script>
+</body>
+</html>
