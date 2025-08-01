@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Examen</title>
+  <style>
+    :root {
+      /* --- Variables de Color Modo Claro (Default) --- */
+      --bg-gradient-start: #667eea;
+      --bg-gradient-end: #764ba2;
+      --container-bg: rgba(255, 255, 255, .95);
+      --text-primary: #2d3748;
+      --text-secondary: #4a5568;
+      --text-muted: #718096;
+      --border-color: #e2e8f0;
+      --card-bg: #fff;
+      --button-bg: #f7fafc;
+      --button-hover-bg: #edf2f7;
+      --button-secondary-bg: #e2e8f0;
+      --button-secondary-hover-bg: #cbd5e0;
+      --correct-bg: #e6fffa;
+      --correct-border: #38a169;
+      --correct-text: #2f855a;
+      --incorrect-bg: #fff5f5;
+      --incorrect-border: #e53e3e;
+      --incorrect-text: #c53030;
+    }
+
+    .dark-mode {
+      /* --- Variables de Color Modo Oscuro --- */
+      --bg-gradient-start: #1a202c;
+      --bg-gradient-end: #2d3748;
+      --container-bg: rgba(45, 55, 72, .95);
+      --text-primary: #e2e8f0;
+      --text-secondary: #cbd5e0;
+      --text-muted: #a0aec0;
+      --border-color: #4a5568;
+      --card-bg: #2d3748;
+      --button-bg: #4a5568;
+      --button-hover-bg: #2d3748;
+      --button-secondary-bg: #4a5568;
+      --button-secondary-hover-bg: #718096;
+      --correct-bg: #2f855a;
+      --correct-border: #38a169;
+      --correct-text: #e6fffa;
+      --incorrect-bg: #c53030;
+      --incorrect-border: #e53e3e;
+      --incorrect-text: #fff5f5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: var(--text-primary);
+      transition: background .3s ease;
+    }
+    .container {
+      background: var(--container-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+      transition: all .3s ease;
+      position: relative;
+    }
+    /* --- BOTÓN DE MODO DÍA/NOCHE --- */
+    #theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--button-secondary-bg);
+        color: var(--text-secondary);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    #theme-toggle:hover {
+        background: var(--button-secondary-hover-bg);
+        transform: scale(1.1) rotate(15deg);
+    }
+
+    .main-header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .main-header-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .header { text-align: center; margin-bottom: 30px; }
+    .title { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; color: var(--text-primary); }
+    .subtitle { color: var(--text-muted); font-size: 1.1rem; }
+    
+    .timer-setup { margin: 20px 0; text-align: center; }
+    .timer-setup label { font-weight: 600; margin-right: 10px; font-size: 1.1rem; color: var(--text-secondary); }
+    .timer-setup select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 2px solid var(--border-color);
+        background-color: var(--button-bg);
+        color: var(--text-primary);
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    .exam-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    #timer-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bg-gradient-end);
+        background: var(--button-bg);
+        padding: 5px 15px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+    #reset-exam-btn {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        background: var(--button-secondary-bg);
+        color: var(--text-secondary);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    #reset-exam-btn:hover { background: var(--button-secondary-hover-bg); transform: rotate(90deg); }
+
+    .progress-container { margin-bottom: 30px; }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      border-radius: 10px;
+      transition: width .3s ease;
+    }
+    .progress-text { text-align: center; color: var(--text-secondary); font-weight: 600; }
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      margin-bottom: 30px;
+      border: 1px solid var(--border-color);
+    }
+    .question-number { color: var(--bg-gradient-start); font-size: .9rem; font-weight: 600; margin-bottom:15px; }
+    .question-text { font-size:1.3rem; line-height:1.6; font-weight:600; margin-bottom:25px; color: var(--text-primary); }
+    .options { display:grid; gap:12px; }
+    .option {
+      background:var(--button-bg);
+      border:2px solid var(--border-color);
+      border-radius:12px;
+      padding:18px 20px;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:flex;
+      align-items:center;
+      font-size:1rem;
+      color:var(--text-secondary);
+      text-align: left;
+    }
+    .option:hover:not(.disabled) {
+      border-color:var(--bg-gradient-start);
+      background:var(--button-hover-bg);
+      transform:translateY(-2px);
+      box-shadow:0 4px 20px rgba(102,126,234,0.15);
+    }
+    .option.disabled { pointer-events:none; }
+    .option.correct { border-color:var(--correct-border)!important; background:var(--correct-bg)!important; color:var(--correct-text)!important; }
+    .option.incorrect { border-color:var(--incorrect-border)!important; background:var(--incorrect-bg)!important; color:var(--incorrect-text)!important; }
+    .option-letter {
+      background:var(--bg-gradient-start);
+      color:white;
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      margin-right:15px;
+      font-size:.9rem;
+      flex-shrink: 0;
+    }
+    .navigation { display:flex; justify-content:space-between; align-items:center; margin-top:30px; }
+    .btn {
+      background:linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color:white;
+      border:none;
+      padding:12px 24px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:1rem;
+      font-weight:600;
+      transition:all .3s ease;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-secondary { background: var(--button-secondary-bg); color: var(--text-secondary); }
+    .btn-secondary:hover:not(:disabled) { background: var(--button-secondary-hover-bg); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .btn:hover:not(:disabled) {
+      transform:translateY(-2px);
+      box-shadow:0 8px 25px rgba(102,126,234,0.3);
+    }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow: none;}
+    .hidden { display:none; }
+    
+    .results { text-align:center; padding:40px 20px; }
+    .results h2 { font-size:2.2rem; margin-bottom:20px; color: var(--text-primary); }
+    .score {
+      font-size:4rem;
+      font-weight:800;
+      margin:30px 0;
+      background:linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .score-details {
+      background: var(--button-bg);
+      border-radius:16px;
+      padding:25px;
+      margin:30px 0;
+      border:1px solid var(--border-color);
+    }
+    .score-item { display:flex; justify-content:space-between; margin:10px 0; font-size:1.1rem; }
+    .score-label { color: var(--text-secondary); }
+    .score-value { font-weight:600; color: var(--text-primary); }
+    .status.passed { color:#38a169; }
+    .status.failed { color:#e53e3e; }
+
+    #review-section h3 {
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    .incorrect-answer-item {
+        background: var(--incorrect-bg);
+        border: 1px solid var(--incorrect-border);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    .incorrect-answer-item p { margin-bottom: 8px; line-height: 1.5; color: var(--text-primary); }
+    .incorrect-answer-item .user-answer { color: var(--incorrect-text); }
+    .incorrect-answer-item .correct-answer { color: var(--correct-text); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button id="theme-toggle" title="Cambiar Tema">🌓</button>
+    <div class="main-header">
+        <h2 class="main-header-title">Examen de Conducir - Chile (Capítulos 1 y 2)</h2>
+    </div>
+
+    <div id="start-screen">
+      <div class="header">
+        <h1 class="title">📝 Simulador de Examen</h1>
+        <p class="subtitle">Pon a prueba tus conocimientos</p>
+      </div>
+      <div class="timer-setup">
+          <label for="time-select">Selecciona el tiempo:</label>
+          <select id="time-select">
+              <option value="15" selected>15 Minutos</option>
+              <option value="20">20 Minutos</option>
+              <option value="25">25 Minutos</option>
+              <option value="30">30 Minutos</option>
+              <option value="35">35 Minutos</option>
+              <option value="40">40 Minutos</option>
+              <option value="45">45 Minutos</option>
+              <option value="50">50 Minutos</option>
+              <option value="55">55 Minutos</option>
+              <option value="60">60 Minutos</option>
+          </select>
+      </div>
+
+      <div class="timer-setup">
+          <label for="pass-mark-select">Nota de Aprobación:</label>
+          <select id="pass-mark-select">
+              <option value="50">50%</option>
+              <option value="60">60%</option>
+              <option value="70">70%</option>
+              <option value="80">80%</option>
+              <option value="85" selected>85%</option>
+              <option value="90">90%</option>
+              <option value="100">100%</option>
+          </select>
+      </div>
+      <div style="text-align:center;">
+         <p id="start-text" style="margin:20px 0;color: var(--text-muted);font-size:1.1rem;"></p>
+        <button id="start-btn" class="btn">🚀 Comenzar Examen</button>
+      </div>
+    </div>
+
+    <div id="exam-screen" class="hidden">
+      <button id="reset-exam-btn" title="Reiniciar Examen">🔄</button>
+       <div class="exam-header">
+         <h2 style="color: var(--text-muted);">Examen en Curso</h2>
+         <div id="timer-display">--:--</div>
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar">
+           <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text"></div>
+      </div>
+      <div class="question-card">
+        <div class="question-number" id="question-number"></div>
+        <div class="question-text" id="question-text"></div>
+        <div class="options" id="options"></div>
+      </div>
+      <div class="navigation">
+        <button class="btn btn-secondary" id="prev-btn">← Anterior</button>
+         <button class="btn" id="next-btn">Siguiente →</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="hidden">
+      <div class="results">
+        <h2 id="results-title">¡Examen Completado!</h2>
+        <div class="score" id="final-score"></div>
+        <div class="score-details">
+          <div class="score-item">
+            <span class="score-label">Respuestas correctas:</span>
+            <span class="score-value" id="correct-count"></span>
+           </div>
+          <div class="score-item">
+            <span class="score-label">Respuestas incorrectas:</span>
+            <span class="score-value" id="incorrect-count"></span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Total de preguntas:</span>
+            <span class="score-value" id="total-count"></span>
+           </div>
+          <div class="score-item">
+            <span class="score-label">Estado:</span>
+            <span class="score-value status" id="exam-status"></span>
+          </div>
+        </div>
+        <button id="restart-btn" class="btn">🔄 Reiniciar Examen</button>
+
+        <div id="review-section" class="hidden" style="margin-top: 40px;">
+            <h3>Revisión de Respuestas Incorrectas</h3>
+            <div id="incorrect-answers-list" style="margin-top: 20px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    // --- BANCO DE PREGUNTAS ---
+    let questions = [
+        { question: "¿Cuál es la diferencia fundamental entre un \"siniestro\" y un \"accidente\" según el manual?", options: ["Un \"siniestro\" es el término legal para eventos con fatalidades, mientras que un \"accidente\" se usa para eventos con solo daños materiales.", "Un \"accidente\" implica un evento fortuito o inevitable, mientras que un \"siniestro de tránsito\" se define como un evento que puede prevenirse mediante una conducción responsable y el cumplimiento de las normas.", "Un \"accidente\" es un evento prevenible causado por error humano, mientras que un \"siniestro\" es un evento inevitable causado por fallas mecánicas."], correct: 1 },
+        { question: "¿Qué tipo de mentalidad busca fomentar el uso del término \"siniestro de tránsito\"?", options: ["Una mentalidad de resignación, aceptando que los errores siempre ocurrirán.", "Una mentalidad legal, para facilitar los trámites con las aseguradoras.", "Busca fomentar una mentalidad preventiva en los conductores, haciéndoles reconocer que la mayoría de estos eventos son evitables."], correct: 2 },
+        { question: "¿Cuáles son las tres causas principales de los siniestros de tránsito?", options: ["Suelen ser el resultado de errores humanos, condiciones viales o fallos mecánicos.", "Son principalmente causados por el mal estado de los vehículos, las condiciones climáticas y la falta de señalización.", "Se deben exclusivamente a la imprudencia de los conductores, la alta velocidad y el consumo de alcohol."], correct: 0 },
+        { question: "Además de las víctimas directas, ¿quiénes más se ven afectados por el sufrimiento de un siniestro?", options: ["Únicamente los servicios de emergencia y el personal médico que atiende el evento.", "El sufrimiento afecta profundamente al entorno cercano de la víctima, incluyendo a la familia, amigos y la comunidad.", "Principalmente las compañías de seguros y los talleres mecánicos por los costos asociados."], correct: 1 },
+        { question: "¿Qué tipo de secuelas psicológicas pueden sufrir las víctimas de siniestros?", options: ["El impacto psicológico puede incluir trastornos como el estrés postraumático o la ansiedad.", "Las secuelas son siempre físicas, como fracturas o lesiones medulares, pero no psicológicas.", "Únicamente una aversión temporal a conducir, que desaparece a los pocos días."], correct: 0 },
+        { question: "¿Por qué es difícil cuantificar el número de personas que quedan con discapacidad permanente?", options: ["Porque las personas con discapacidad evitan registrarse en las estadísticas por privacidad.", "Porque las estadísticas generalmente solo las registran como \"lesionados\", lo que subestima el impacto a largo plazo.", "Porque la tecnología médica actual evita que queden discapacidades permanentes tras un siniestro."], correct: 1 },
+        { question: "A nivel mundial, ¿qué lugar ocupan los siniestros de tránsito como causa de mortalidad?", options: ["Son una causa menor de mortalidad, muy por debajo de enfermedades comunes.", "Son la principal causa de mortalidad en todas las edades, superando a cualquier otra causa.", "Son una de las principales causas de mortalidad a nivel mundial, especialmente entre los jóvenes."], correct: 2 },
+        { question: "¿Qué fuente externa se cita en el manual para respaldar la información sobre el impacto humano de los siniestros?", options: ["Se cita un informe de Carabineros de Chile sobre siniestralidad nacional.", "Se cita el documento \"Seguridad Vial, para Nuevos Conductores\" de UNTRAS, DGI, España.", "Se cita un estudio de la Organización Mundial de la Salud (OMS) sobre mortalidad global."], correct: 1 },
+        { question: "¿De dónde provienen los datos estadísticos sobre siniestros presentados en el manual?", options: ["De encuestas anónimas realizadas a conductores en todo el país.", "De un promedio de cifras reportadas por las compañías de seguros.", "Provienen de estadísticas oficiales de Carabineros de Chile."], correct: 2 },
+        { question: "Según el manual, ¿cuántos siniestros de tránsito se registran al año en Chile?", options: ["Se registran aproximadamente 1,700 siniestros de tránsito al año.", "Se registran más de 82,000 siniestros de tránsito al año.", "Se registran cerca de 50,000 siniestros de tránsito al año."], correct: 1 },
+        { question: "En promedio, ¿cuántas personas fallecen anualmente en Chile por siniestros de tránsito?", options: ["Aproximadamente 1,700 personas fallecen anualmente.", "Más de 82,000 personas fallecen anualmente.", "Menos de 500 personas fallecen anualmente."], correct: 0 },
+        { question: "¿Qué período de tiempo abarcan los datos promedio de siniestralidad en Chile?", options: ["Corresponden a los datos consolidados únicamente del año 2022.", "Corresponden a un promedio basado en los últimos cinco años, hasta el año 2022.", "Abarcan las estadísticas de la última década (10 años)."], correct: 1 },
+        { question: "¿Cuál es la limitación de tiempo que tienen las estadísticas de Carabineros para registrar una muerte por siniestro de tránsito?", options: ["Las estadísticas solo contabilizan las muertes que ocurren en el lugar del siniestro.", "Las estadísticas contabilizan todas las muertes, sin importar cuánto tiempo haya pasado desde el siniestro.", "Las estadísticas solo contabilizan las muertes que ocurren dentro de las 48 horas posteriores al siniestro."], correct: 2 },
+        { question: "¿Qué es el \"Sistema Seguro\"?", options: ["Es un tipo de póliza de seguro vehicular que ofrece cobertura total contra todo riesgo.", "Es un marco de trabajo integral que busca minimizar la probabilidad de que ocurran siniestros y, si ocurren, reducir la gravedad de sus consecuencias.", "Es un programa de fiscalización intensiva para sancionar a conductores infractores."], correct: 1 },
+        { question: "¿Desde qué año se han implementado en Chile políticas basadas en el enfoque del Sistema Seguro?", options: ["Desde el año 2000, con la introducción de los vehículos con airbags.", "Desde la primera Política Nacional de Seguridad de Tránsito de 1993.", "Desde el año 2010, como parte de un acuerdo internacional de seguridad vial."], correct: 1 },
+        { question: "¿Cuál es la premisa fundamental del Sistema Seguro respecto a los errores humanos?", options: ["La premisa es que los errores humanos pueden eliminarse por completo con la educación vial adecuada.", "Reconoce que los errores humanos son inevitables, pero un sistema bien diseñado puede compensar estos errores para evitar consecuencias graves.", "Sostiene que los errores humanos son la única causa de los siniestros y deben ser sancionados con mayor dureza."], correct: 1 },
+        { question: "Mencione los 5 componentes del Sistema Seguro.", options: ["Los componentes son: Conductores, Vehículos, Infraestructura, Regulaciones y Respuesta de emergencia.", "Los componentes son: Velocidad, Alcohol, Distracción, Fatiga y Clima.", "Los componentes son: Fiscalización, Educación, Sanciones, Tecnología y Seguros."], correct: 0 },
+        { question: "Dé un ejemplo de cada componente del Sistema Seguro.", options: ["Conductores: Sanciones por infracciones; Vehículos: Color de la carrocería; Infraestructura: Peajes; Regulaciones: Manual del conductor; Respuesta de emergencia: Talleres mecánicos.", "Conductores: Licencia de conducir; Vehículos: Marca del auto; Infraestructura: Cantidad de pistas; Regulaciones: Venta de autos; Respuesta de emergencia: Grúas.", "Conductores: Capacitación y educación vial; Vehículos: Cinturones, airbags, ABS; Infraestructura: Pasos peatonales, rotondas; Regulaciones: Límites de velocidad; Respuesta de emergencia: Sistemas eficientes para atender a víctimas."], correct: 2 },
+        { question: "¿Qué mide el tacómetro?", options: ["Mide la velocidad del vehículo en kilómetros por hora.", "Mide la temperatura del aceite del motor.", "Mide la velocidad del motor en revoluciones por minuto (RPM)."], correct: 2 },
+        { question: "¿Para qué sirve el odómetro?", options: ["Indica la distancia total o parcial recorrida por el vehículo.", "Indica la cantidad de combustible que queda en el estanque.", "Registra las horas de funcionamiento del motor."], correct: 0 },
+        { question: "¿Qué significa la letra \"E\" y la \"F\" en el indicador de combustible?", options: ["\"E\" significa \"Eficiente\" y \"F\" significa \"Fallo\".", "\"E\" significa \"Eléctrico\" y \"F\" significa \"Fósil\".", "La letra \"E\" significa \"Empty\" (vacío) y la \"F\" indica \"Full\" (lleno)."], correct: 2 },
+        { question: "¿Qué significa la letra \"C\" y la \"H\" en el indicador de temperatura?", options: ["La letra \"C\" significa \"Cold\" (frío) y la \"H\" significa \"Hot\" (caliente).", "\"C\" significa \"Correcto\" y \"H\" significa \"Humo\".", "\"C\" significa \"Circuito\" y \"H\" significa \"Hidráulico\"."], correct: 0 },
+        { question: "¿Cuál es la función del sistema de lubricación?", options: ["Enfriar el motor mediante la circulación de agua y anticongelante.", "Se encarga de distribuir aceite a las partes móviles del motor para reducir el desgaste y la fricción.", "Limpiar los gases de escape antes de que salgan al exterior."], correct: 1 },
+        { question: "¿Qué se debe hacer si se enciende la luz de presión de aceite?", options: ["Continuar conduciendo a menor velocidad y revisar el aceite en la próxima bencinera.", "Se debe detener el motor de inmediato y no volver a ponerlo en marcha hasta haber reparado la avería.", "Acelerar el motor para aumentar la presión del aceite y apagar la luz."], correct: 1 },
+        { question: "Además de revisar el nivel, ¿qué otro mantenimiento requiere el aceite del motor?", options: ["Se debe rellenar con agua para mantener su fluidez.", "No requiere otro mantenimiento, solo rellenar cuando baja.", "Se debe cambiar periódicamente el aceite y el filtro según las recomendaciones del fabricante."], correct: 2 },
+        { question: "¿Qué elemento produce la energía eléctrica del vehículo y cuál la almacena?", options: ["La batería produce la energía y el alternador la almacena.", "El motor produce la energía y los fusibles la almacenan.", "La energía es producida por el alternador y almacenada en la batería."], correct: 2 },
+        { question: "¿Qué puede causar que se genere menos electricidad y la batería no cargue bien?", options: ["Un fusible quemado en el panel de instrumentos.", "Una correa del alternador poco tensa.", "Un bajo nivel de combustible en el estanque."], correct: 1 },
+        { question: "Si una unidad eléctrica (como una luz) deja de funcionar, ¿qué es lo primero que se debe revisar?", options: ["La carga de la batería, ya que probablemente esté descargada.", "La correa del alternador, pues debe estar suelta.", "Lo primero que se debe revisar es si un fusible se ha fundido."], correct: 2 },
+        { question: "¿Qué puede indicar que la luz de los intermitentes destelle más rápido de lo habitual?", options: ["Que la batería del vehículo tiene un exceso de carga.", "Es probable que una de las bombillas intermitentes se haya quemado.", "Un fallo en el sistema de frenos ABS."], correct: 1 },
+        { question: "¿Qué precaución se debe tener con el líquido de la batería?", options: ["El ácido de la batería es corrosivo, por lo que se debe tener cuidado con la ropa y la piel.", "Es inflamable, por lo que se debe evitar el calor cerca de la batería.", "Es inofensivo, pero puede manchar la ropa de forma permanente."], correct: 0 },
+        { question: "¿Qué se debe hacer si se siente un fuerte olor a gasolina mientras se conduce?", options: ["Abrir las ventanas para ventilar y continuar conduciendo con normalidad.", "Se debe detener el vehículo para investigar la causa y prevenir el riesgo de incendio.", "Acelerar para consumir rápidamente el exceso de combustible y eliminar el olor."], correct: 1 },
+        { question: "Mencione tres precauciones al cargar gasolina.", options: ["Mantener el motor encendido, evitar inhalar los vapores y no usar el celular.", "Apagar las luces, poner el freno de mano y cerrar las ventanas.", "Apagar el motor del vehículo, no encender cigarrillos y no hablar por celular."], correct: 2 },
+        { question: "¿Cómo se puede reducir la contaminación por vapores de gasolina?", options: ["Llenando el estanque cada vez que se recarga para liberar menos gases y evitando abrir la tapa más de lo necesario.", "Usando gasolina de menor octanaje, ya que se evapora menos.", "Conduciendo a altas velocidades para que los vapores se dispersen rápidamente."], correct: 0 },
+        { question: "¿De qué se compone el líquido refrigerante?", options: ["De aceite de motor mezclado con un aditivo especial.", "De agua destilada más un anticongelante.", "Únicamente de agua de la llave."], correct: 1 },
+        { question: "¿Para qué sirve el anticongelante en el sistema de refrigeración?", options: ["Para que el motor alcance su temperatura de funcionamiento más rápido.", "Para limpiar el interior del radiador y evitar la oxidación.", "Impide que el motor y el radiador se dañen por efecto de la congelación del agua a temperaturas bajo cero."], correct: 2 },
+        { question: "¿Qué indica un ruido anormalmente alto en el tubo de escape?", options: ["Suele ser una señal de roturas o de orificios en el silenciador.", "Indica que el motor está funcionando con demasiada potencia y eficiencia.", "Es una señal de que el convertidor catalítico está funcionando correctamente."], correct: 0 },
+        { question: "¿Cuáles son los primeros síntomas de intoxicación por monóxido de carbono?", options: ["Euforia y aumento de la energía.", "Dolor de cabeza y vómitos.", "Tos seca y estornudos."], correct: 1 },
+        { question: "Además de un escape roto, ¿en qué otra situación puede penetrar monóxido de carbono al vehículo?", options: ["Al conducir con el aire acondicionado en modo de recirculación.", "Al conducir con el portaequipaje (maletero) abierto.", "Al utilizar la calefacción del vehículo a máxima potencia."], correct: 1 },
+        { question: "¿Qué es el sistema de transmisión?", options: ["Es el sistema que transmite las señales eléctricas desde el volante a la computadora del vehículo.", "Es el sistema que transmite la música desde la radio a los parlantes.", "Es el sistema encargado de transferir la potencia que genera el motor a las ruedas del vehículo."], correct: 2 },
+        { question: "¿Qué función cumple el embrague?", options: ["Es el pedal que activa los frenos de emergencia.", "Es el sistema (pedal) que permite la transmisión o interrupción de la energía del motor hacia las ruedas de tracción.", "Es el mecanismo que acopla la tracción a las cuatro ruedas."], correct: 1 },
+        { question: "¿Qué efecto negativo tiene en el control del vehículo el presionar el embrague más tiempo del necesario?", options: ["Aumenta el control, ya que el vehículo se vuelve más maniobrable.", "Se reduce el control sobre el vehículo.", "No tiene ningún efecto, es una práctica recomendada para ahorrar combustible."], correct: 1 },
+        { question: "¿Qué función tiene la caja de cambios?", options: ["Multiplica la fuerza del motor, permitiendo controlar manualmente el cambio de marchas y la velocidad.", "Almacena el aceite necesario para la lubricación del motor.", "Es el componente que controla el sistema de dirección y la alineación de las ruedas."], correct: 0 },
+        { question: "¿Qué función cumple la servodirección (dirección asistida)?", options: ["Endurece la dirección a altas velocidades para mayor seguridad.", "Es un mecanismo auxiliar que permite que mover el volante requiera el mínimo esfuerzo humano.", "Es un sistema que corrige automáticamente la trayectoria del vehículo en las curvas."], correct: 1 },
+        { question: "¿Qué acciones pueden desalinear la dirección con mayor rapidez?", options: ["Conducir por autopistas a la velocidad máxima permitida.", "Lavar el vehículo con agua a alta presión.", "Someter el vehículo a sobrecargas, golpear contra el borde de una solera (cuneta) o caer en hoyos."], correct: 2 },
+        { question: "¿Qué problemas provoca una dirección desalineada?", options: ["Un menor consumo de combustible y un andar más suave.", "Provoca vibraciones en las ruedas y aumenta el desgaste de los neumáticos.", "Mejora el agarre en curvas y reduce la distancia de frenado."], correct: 1 },
+        { question: "Mencione dos síntomas de amortiguadores en mal estado.", options: ["Una dirección más suave y una respuesta más rápida del volante.", "Un frenado más corto y un menor balanceo en las curvas.", "El vehículo se balancea demasiado en carreteras en buen estado y, al frenar, se inclina excesivamente hacia adelante."], correct: 2 },
+        { question: "¿Cómo afecta a la distancia de frenado unos amortiguadores en mal estado?", options: ["Aumenta la distancia de frenado, sobre todo con pavimento irregular o mojado.", "Disminuye la distancia de frenado, ya que las ruedas rebotan sobre el asfalto.", "No afecta la distancia de frenado, solo el confort de los pasajeros."], correct: 0 },
+        { question: "¿Cómo afecta a la fatiga del conductor unos amortiguadores en mal estado?", options: ["No afecta la fatiga, ya que el conductor no siente el trabajo de la suspensión.", "Disminuye el confort durante la conducción y la fatiga aparece con mayor facilidad.", "Aumenta la concentración del conductor, ya que debe estar más atento al camino."], correct: 1 },
+        { question: "¿Qué son los dos sistemas de frenos que actúan de forma independiente?", options: ["El freno de disco (delantero) y el freno de tambor (trasero).", "El freno de servicio (pedal de freno) que actúa sobre las cuatro ruedas y el freno de estacionamiento (freno de mano) que actúa sobre las ruedas traseras.", "El freno principal (hidráulico) y el freno auxiliar (ABS)."], correct: 1 },
+        { question: "¿Cuál es la ventaja de los sistemas de frenos de dos circuitos de los vehículos modernos?", options: ["Permiten frenar el doble de rápido que los sistemas de un solo circuito.", "Si un circuito falla, se mantiene cierto efecto de frenado en el otro, lo que aumenta la seguridad.", "Hacen que el pedal de freno sea más suave y fácil de presionar."], correct: 1 },
+        { question: "¿Cuándo funciona el servofreno?", options: ["El servofreno funciona siempre, incluso con el motor apagado.", "Funciona solo cuando se presiona el pedal de freno a fondo en una emergencia.", "El servofreno, que aumenta la fuerza de frenado, funciona solo con el motor en marcha."], correct: 2 },
+        { question: "¿Qué permite el sistema de frenos ABS en una frenada de emergencia?", options: ["Acorta la distancia de frenado en todas las condiciones, especialmente en pavimento seco.", "Detecta el bloqueo de las ruedas y reduce la presión de frenado para que sigan girando, lo que permite al conductor mantener el control sobre la dirección del vehículo.", "Bloquea las ruedas de forma intermitente para crear mayor fricción con el pavimento."], correct: 1 },
+        { question: "Si los frenos ABS fallan, ¿el vehículo se queda sin frenos?", options: ["Sí, el fallo del ABS implica un fallo total del sistema de frenado.", "No, si el ABS falla, los frenos convencionales seguirán funcionando.", "Sí, pero solo en las ruedas delanteras; las traseras seguirán frenando."], correct: 1 },
+        { question: "¿Qué indica una disminución del nivel de líquido de frenos?", options: ["Es normal, ya que el líquido de frenos se consume con el uso.", "Indica que hay algún defecto mecánico, como una fuga, ya que este líquido no se consume.", "Indica que las pastillas de freno están nuevas y absorben más líquido."], correct: 1 },
+        { question: "¿Cómo se puede detectar si hay aire en el sistema de frenos?", options: ["Si el pedal de freno se siente rígido y no baja al presionarlo.", "Si el vehículo frena de forma irregular, desviándose hacia un lado.", "Si el pedal de freno se siente elástico y cede en su punto de presión."], correct: 2 },
+        { question: "¿Cómo se puede detectar una fuga en el sistema de frenos?", options: ["Si al mantener el pedal presionado fuertemente, su posición desciende o si se ven manchas de líquido en el suelo debajo del vehículo.", "Si el pedal de freno tiene un recorrido demasiado corto.", "Si las luces de freno parpadean al frenar."], correct: 0 },
+        { question: "¿En qué tres situaciones se debe comprobar el funcionamiento de los frenos a baja velocidad?", options: ["Después de cambiar el aceite, al inflar los neumáticos y al limpiar el interior del vehículo.", "Si se ha circulado por vías inundadas, si se ha lavado el vehículo recientemente, o si el vehículo ha estado guardado por mucho tiempo.", "Al iniciar un viaje largo, al conducir de noche y al llevar pasajeros."], correct: 1 },
+        { question: "¿Cuál es la profundidad mínima aconsejable y la mínima legal de los surcos de un neumático?", options: ["La aconsejable es de 5 mm y la legal es de 3 mm.", "La profundidad aconsejable es de 3 mm y la mínima legal es de 1,6 mm.", "La aconsejable es de 1,6 mm y la legal es de 0,8 mm."], correct: 1 },
+        { question: "¿Qué riesgo principal aumenta cuando la profundidad de los surcos es inferior a 1,6 mm?", options: ["El riesgo de que el neumático se reviente por el calor.", "El riesgo de que el neumático se desgaste de forma irregular.", "Aumenta el riesgo de perder el contacto con el pavimento mojado (aquaplaning)."], correct: 2 },
+        { question: "¿Qué efecto tiene una presión de aire demasiado baja en las ruedas delanteras?", options: ["La dirección se vuelve más liviana y sensible.", "La dirección del vehículo es más pesada y tiende a torcer hacia el lado con baja presión.", "Mejora el frenado en pavimento mojado."], correct: 1 },
+        { question: "¿Qué efecto tiene una presión de aire demasiado alta en los neumáticos?", options: ["Se pierde la adherencia de los neumáticos con el pavimento.", "Aumenta la adherencia y la estabilidad en curvas.", "Reduce el desgaste de la banda de rodamiento."], correct: 0 },
+        { question: "¿Qué tipo de desgaste indica que un neumático se ha usado con exceso de aire?", options: ["Un desgaste notorio en la zona central de la banda de rodamiento.", "Un desgaste solo en los extremos (hombros) de la banda de rodamiento.", "Un desgaste parejo en toda la superficie del neumático."], correct: 0 },
+        { question: "¿Qué tipo de desgaste indica que un neumático se ha usado con poco aire?", options: ["Un desgaste notorio en la zona central de la banda de rodamiento.", "Un desgaste solo en los extremos de la banda de rodamiento.", "Grietas en los costados del neumático."], correct: 1 },
+        { question: "¿Cómo se debe actuar si se revienta un neumático trasero?", options: ["Se debe frenar bruscamente y sujetar el volante con firmeza.", "Se debe girar el volante en la dirección opuesta a la que se desvía la cola del vehículo.", "Se debe girar el volante hacia el lado en que se desvía la cola del vehículo."], correct: 2 },
+        { question: "¿Cómo se debe actuar si se revienta un neumático delantero?", options: ["Se debe acelerar suavemente para estabilizar el vehículo.", "Se debe frenar bruscamente para detenerse lo antes posible.", "Se debe frenar de forma suave sosteniendo el volante firmemente."], correct: 2 },
+        { question: "¿Por qué se debe controlar la presión de los neumáticos cuando están fríos?", options: ["Porque si se ajusta la presión con los neumáticos calientes, al enfriarse tendrán una presión inferior a la adecuada.", "Porque el aire caliente da una lectura de presión más precisa en los medidores.", "Porque los neumáticos fríos permiten una lectura de presión más baja, lo que ahorra aire."], correct: 0 },
+        { question: "¿Por qué es necesario cambiar los neumáticos al menos cada 5 años?", options: ["No es necesario si el dibujo aún tiene la profundidad legal.", "Porque la garantía del fabricante usualmente expira a los 5 años.", "Porque aunque tengan poco uso, el material envejece y pierde sus propiedades para rodar con seguridad."], correct: 2 },
+        { question: "¿Qué presión debe tener la rueda de repuesto?", options: ["Debe tener la misma presión que las otras ruedas.", "Debe tener una presión más baja para que sea más fácil de instalar.", "Debe tener la presión más alta sugerida por el fabricante."], correct: 2 },
+        { question: "¿Qué luces obligatorias debe tener un vehículo en su parte delantera?", options: ["Dos focos de luces altas y bajas, dos luces de estacionamiento y dos luces destellantes de viraje.", "Dos focos de luces altas, dos neblineros y una luz de día.", "Cuatro focos de luces altas y bajas y dos luces de posición."], correct: 0 },
+        { question: "¿Qué luces obligatorias debe tener un vehículo en su parte trasera?", options: ["Dos luces de freno, dos luces de viraje y una luz de patente.", "Dos luces de estacionamiento, dos de viraje, dos de retroceso, dos luces rojas fijas, dos de freno y una luz que ilumine la placa patente.", "Cuatro luces rojas fijas, dos luces de freno y dos luces de retroceso."], correct: 1 },
+        { question: "¿Qué vehículos están obligados a tener una tercera luz de freno?", options: ["Solo los vehículos de transporte de escolares y los de emergencia.", "Todos los vehículos sin excepción, sin importar el año de fabricación.", "Automóviles, jeeps, furgones, station wagon, camionetas y vehículos de transporte escolar."], correct: 2 },
+        { question: "¿Cuándo se deben usar las luces de advertencia de peligro?", options: ["Como excusa para un estacionamiento breve en un lugar no permitido.", "Para indicar a otros conductores que se va a conducir a una velocidad muy baja.", "Solo cuando el vehículo está detenido por una falla o para advertir de un peligro u obstrucción en la vía."], correct: 2 },
+        { question: "¿Cuándo está permitido usar las luces neblineras?", options: ["En cualquier momento durante la noche para mejorar la visibilidad.", "En túneles largos y poco iluminados.", "Solo cuando la visibilidad se encuentre considerablemente reducida por niebla o lluvia torrencial."], correct: 2 },
+        { question: "¿Qué particularidad tienen los espejos laterales convexos que requiere precaución?", options: ["Hacen que las imágenes se visualicen más cercanas de lo que están.", "Hacen que las imágenes se visualicen más lejanas de lo que están en la realidad.", "Eliminan por completo los puntos ciegos del vehículo."], correct: 1 },
+        { question: "¿Qué son los puntos ciegos o ángulos muertos?", options: ["Son las áreas reflectantes en los espejos que pueden encandilar.", "Son los sectores sobre los cuales el conductor no tiene visión, incluso con los espejos bien regulados.", "Son los momentos en que el sol impide la visión a través de los espejos."], correct: 1 },
+        { question: "¿Con qué usuarios de la vía se debe tener especial precaución por los puntos ciegos?", options: ["Con vehículos grandes como camiones y buses.", "Con los usuarios vulnerables, es decir, peatones, ciclistas y motociclistas.", "Con vehículos de emergencia que se aproximan rápidamente."], correct: 1 },
+        { question: "Al tomar el volante, ¿cuál es la postura correcta de los brazos?", options: ["Completamente extendidos para tener mayor fuerza al girar.", "Los brazos deben quedar ligeramente flexionados.", "Lo más cerca posible del cuerpo para reducir la fatiga."], correct: 1 },
+        { question: "Antes de poner el vehículo en movimiento, ¿qué verificación final se debe hacer?", options: ["Mirar alrededor y chequear los puntos ciegos.", "Ajustar la radio y el sistema de climatización.", "Verificar que todos los pasajeros lleven puesto el cinturón de seguridad."], correct: 0 },
+        { question: "¿Cómo aumenta la energía del movimiento si se duplica la velocidad?", options: ["La energía del movimiento también se duplica.", "La energía del movimiento aumenta 4 veces.", "La energía del movimiento no cambia, solo la distancia de frenado."], correct: 1 },
+        { question: "¿Cómo se debe enfrentar una curva para hacerlo de forma segura?", options: ["Frenar justo en el medio de la curva para ajustar la trayectoria.", "Se debe reducir la velocidad con tiempo antes de entrar en la curva y acelerar suavemente a la salida de la misma.", "Mantener una velocidad constante antes, durante y después de la curva."], correct: 1 },
+        { question: "¿De qué depende la magnitud de la fuerza centrífuga que tiende a sacar al vehículo de una curva?", options: ["Depende del peso del vehículo y del estado de los neumáticos.", "Depende únicamente del radio de la curva.", "Depende directamente de la velocidad y de lo cerrada que sea la curva."], correct: 2 },
+        { question: "¿Qué es la distancia de reacción?", options: ["Es la distancia que recorre el vehículo desde que se pisa el freno hasta que se detiene.", "Es la distancia que recorre el vehículo mientras el conductor reacciona ante una situación, antes de empezar a frenar.", "Es la distancia mínima a la que se debe seguir a otro vehículo."], correct: 1 },
+        { question: "¿Qué es la distancia de frenado?", options: ["Es la distancia que recorre el vehículo en un segundo, según la velocidad.", "Es la distancia que recorre el vehículo desde que el conductor decide frenar hasta que pisa el pedal.", "Es la distancia que recorre el vehículo desde que se presiona el pedal de freno hasta su detención total."], correct: 2 },
+        { question: "Si se triplica la velocidad, ¿cuántas veces aumenta la distancia de frenado?", options: ["Aumenta 3 veces.", "Aumenta 6 veces.", "La distancia de frenado aumenta 9 veces."], correct: 2 },
+        { question: "Al bajar una pendiente muy pronunciada, ¿qué se debe hacer para no sobrecalentar los frenos?", options: ["Bajar en neutro (desenganchado) para que el vehículo se deslice libremente.", "Es necesario conducir en una marcha baja para que el motor vaya frenando y ayude a controlar la velocidad.", "Usar el freno de mano de forma intermitente para ayudar a los frenos principales."], correct: 1 },
+        { question: "¿Qué tendencia tiene un vehículo con motor delantero si se coloca una carga pesada en su parte trasera?", options: ["Tenderá a girar menos de lo esperado, volviéndose más estable.", "Tenderá a girar más de lo esperado y, si pierde la fricción, podría dar un giro de 180°.", "No tiene ningún efecto en la tendencia de giro del vehículo."], correct: 1 },
+        { question: "¿Cómo se debe reaccionar si las ruedas de un vehículo de tracción trasera pierden fricción y producen un coletazo (derrape)?", options: ["Se debe frenar inmediatamente y girar el volante en la dirección opuesta al coletazo.", "Se debe soltar el acelerador y poner el vehículo en neutro.", "Se debe continuar acelerando y girar la dirección hacia la trayectoria deseada."], correct: 2 },
+        { question: "¿Cuál es la función principal del cinturón de seguridad?", options: ["Evitar multas de tránsito y cumplir con la ley.", "Mantener al conductor en una postura cómoda durante viajes largos.", "Salvar vidas y disminuir las posibilidades de sufrir lesiones en un siniestro."], correct: 2 },
+        { question: "¿El uso del cinturón en los asientos traseros es siempre obligatorio?", options: ["Sí, es obligatorio en todos los vehículos sin excepción.", "No, es solo una recomendación, nunca una obligación.", "Es obligatorio solo si el vehículo tiene un año de fabricación de 2002 o posterior."], correct: 2 },
+        { question: "Un choque a 50 km/h sin cinturón de seguridad, ¿a qué caída equivale?", options: ["Equivale a caerse desde un segundo piso.", "Equivale a tirarse a la calle desde un cuarto piso.", "Equivale a caerse desde la propia altura, no es peligroso."], correct: 1 },
+        { question: "Un choque a 70 km/h sin cinturón, ¿a qué caída equivale?", options: ["Equivale a lanzarse desde un séptimo piso.", "Equivale a lanzarse desde un tercer piso.", "Equivale a lanzarse desde un décimo piso."], correct: 0 },
+        { question: "¿Qué se debe hacer con el cinturón de seguridad después de un siniestro?", options: ["Se debe lavar y revisar que el broche funcione correctamente.", "No es necesario hacer nada, están diseñados para resistir múltiples siniestros.", "Se debe reemplazar por uno nuevo, ya que podría estar dañado y no ser seguro."], correct: 2 },
+        { question: "¿Cómo debe posicionarse la banda torácica del cinturón?", options: ["Debe pasar lo más cerca posible del cuello para mayor sujeción.", "Debe pasar por debajo del brazo para mayor comodidad.", "Debe pasar sobre la clavícula, a medio camino entre el hombro y el cuello, y descender por el centro del pecho."], correct: 2 },
+        { question: "En el caso de una persona embarazada, ¿dónde debe ir la banda abdominal del cinturón?", options: ["No debe usar la banda abdominal, solo la torácica.", "Debe colocarse sobre el abdomen para proteger directamente al bebé.", "Debe colocarse sobre los huesos de la cadera, siempre por debajo del abdomen."], correct: 2 },
+        { question: "¿Qué es el \"efecto submarino\"?", options: ["Es cuando el cinturón de seguridad se traba por la humedad.", "Se produce cuando la persona, durante el siniestro, se desliza por debajo de la banda abdominal del cinturón.", "Es el deslizamiento del vehículo sobre una calzada mojada."], correct: 1 },
+        { question: "Mencione dos formas de evitar el efecto submarino.", options: ["Poniendo un almohadón en el asiento y conduciendo con ropa holgada.", "Usando solo la banda torácica del cinturón y reclinando el asiento lo máximo posible.", "Conducir en una postura adecuada sin reclinar el asiento en exceso y asegurarse de que el cinturón esté bien tensado al cuerpo."], correct: 2 },
+        { question: "Según los estudios, ¿es más seguro salir eyectado del vehículo en un siniestro?", options: ["Sí, porque se evitan los incendios y el aplastamiento dentro del vehículo.", "No, es mucho más seguro quedar dentro del vehículo. Si una persona sale eyectada, la probabilidad de fallecer aumenta en un 300%.", "Depende del tipo de siniestro; a veces es más seguro salir eyectado."], correct: 1 },
+        { question: "¿Es cierto que en viajes cortos no hace falta el cinturón de seguridad?", options: ["Sí, el riesgo es muy bajo en trayectos de menos de 5 kilómetros.", "No, es falso. La mayoría de los siniestros con víctimas se producen a pocos kilómetros de sus casas.", "Es cierto, pero solo en zonas urbanas con límites de velocidad bajos."], correct: 1 },
+        { question: "¿Por qué un pasajero sin cinturón en el asiento trasero es un peligro para los demás?", options: ["Porque distrae al conductor al moverse constantemente en el asiento.", "Porque en un siniestro es impulsado hacia adelante y puede golpear mortalmente al conductor o a quien viaje en el asiento delantero.", "No es un peligro para los demás, solo para sí mismo."], correct: 1 },
+        { question: "¿Es eficaz el airbag si no se utiliza junto con el cinturón de seguridad?", options: ["Sí, el airbag reemplaza al cinturón de seguridad en los vehículos modernos.", "No, el airbag no es eficaz si no se utiliza con el cinturón. De hecho, puede provocar graves lesiones si impacta a la persona sin que esta sea retenida por el cinturón.", "Sí, pero solo es eficaz en impactos laterales, no frontales."], correct: 1 },
+        { question: "¿Qué se debe hacer si se enciende el testigo del airbag en el panel?", options: ["Ignorarlo, ya que suele ser un error del sensor que se apaga solo.", "Desconectar la batería por unos minutos para reiniciar el sistema.", "El sistema debe ser revisado a la brevedad posible en un taller."], correct: 2 },
+        { question: "¿Dónde nunca se debe instalar un Sistema de Retención Infantil (silla de bebé)?", options: ["En el asiento trasero del lado del conductor.", "En el asiento central trasero, ya que es el más inseguro.", "Nunca se debe poner en el asiento delantero si hay un airbag frontal activo."], correct: 2 },
+        { question: "¿Qué es el \"efecto latigazo\"?", options: ["Es el movimiento brusco del volante al perder el control del vehículo.", "Es un movimiento violento del cuello que se produce en un impacto por detrás, cuando la cabeza oscila bruscamente respecto del torso.", "Es la sensación de sacudida al pasar por un bache a alta velocidad."],ibernate: 1 },
+        { question: "¿Cuál es la forma de prevenir el latigazo cervical?", options: ["Usando un cojín especial para el cuello durante la conducción.", "Manteniendo la cabeza tensa y rígida en todo momento.", "Usando los apoyacabezas y ajustándolos correctamente."], correct: 2 },
+        { question: "¿Cuál es la posición correcta del apoyacabezas?", options: ["A la altura de la nuca, para que el cuello descanse sobre él.", "Lo más alto posible, por encima de la cabeza, para proteger en caso de volcamiento.", "El borde superior del apoyacabezas debe quedar situado entre el límite superior de la cabeza y la altura de los ojos."], correct: 2 },
+        { question: "¿Cuál debe ser la separación máxima entre la cabeza y el apoyacabezas?", options: ["La separación debe ser de al menos 10 cm para permitir el movimiento.", "La separación debe ser la mínima posible y nunca superior a 4 cm.", "No importa la separación, siempre que esté bien regulado en altura."], correct: 1 }
+    ];
+    // --- VARIABLES GLOBALES ---
+    let currentQuestionIndex;
+    let userAnswers;
+    let timerInterval;
+    let shuffledQuestions = [];
+    let passMark;
+
+    // --- ELEMENTOS DEL DOM ---
+    const startScreen = document.getElementById('start-screen');
+    const examScreen = document.getElementById('exam-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const startBtn = document.getElementById('start-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const resetExamBtn = document.getElementById('reset-exam-btn');
+    const timeSelect = document.getElementById('time-select');
+    const passMarkSelect = document.getElementById('pass-mark-select');
+    const startText = document.getElementById('start-text');
+    const timerDisplay = document.getElementById('timer-display');
+    const questionNumberEl = document.getElementById('question-number');
+    const questionTextEl = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const resultsTitle = document.getElementById('results-title');
+    const correctCountEl = document.getElementById('correct-count');
+    const incorrectCountEl = document.getElementById('incorrect-count');
+    const totalCountEl = document.getElementById('total-count');
+    const finalScoreEl = document.getElementById('final-score');
+    const examStatusEl = document.getElementById('exam-status');
+    const reviewSection = document.getElementById('review-section');
+    const incorrectAnswersList = document.getElementById('incorrect-answers-list');
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    // --- FUNCIONES ---
+
+    function toggleTheme() {
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+            localStorage.setItem('theme', 'dark-mode');
+            themeToggle.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light-mode');
+            themeToggle.textContent = '🌓';
+        }
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark-mode') {
+            body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️';
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggle.textContent = '🌓';
+        }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function randomizeQuestionOptions() {
+        shuffledQuestions = JSON.parse(JSON.stringify(questions));
+        shuffledQuestions.forEach(q => {
+            const correctAnswerText = q.options[q.correct];
+            shuffleArray(q.options);
+            const newCorrectIndex = q.options.findIndex(option => option === correctAnswerText);
+            q.correct = newCorrectIndex;
+        });
+    }
+
+    function initializeApp() {
+        if (questions.length > 0) {
+            startText.textContent = `Prepárate con ${questions.length} preguntas.`;
+            startBtn.disabled = false;
+        } else {
+            startText.textContent = 'No hay preguntas cargadas. Agrega preguntas en el array "questions" para comenzar.';
+            startBtn.disabled = true;
+        }
+        startBtn.addEventListener('click', startExam);
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', prevQuestion);
+        restartBtn.addEventListener('click', restartExam);
+        resetExamBtn.addEventListener('click', restartExam);
+        themeToggle.addEventListener('click', toggleTheme);
+        loadTheme();
+    }
+
+    function startExam() {
+      randomizeQuestionOptions();
+      currentQuestionIndex = 0;
+      userAnswers = new Array(shuffledQuestions.length).fill(null);
+      startScreen.classList.add('hidden');
+      resultsScreen.classList.add('hidden');
+      examScreen.classList.remove('hidden');
+      reviewSection.classList.add('hidden');
+      
+      passMark = parseInt(passMarkSelect.value, 10);
+      
+      const durationMinutes = parseInt(timeSelect.value, 10);
+      startTimer(durationMinutes);
+      showQuestion();
+    }
+    
+    function showQuestion() {
+        const q = shuffledQuestions[currentQuestionIndex];
+        if (!q) return;
+
+        updateProgress();
+        questionNumberEl.textContent = `Pregunta ${currentQuestionIndex + 1}`;
+        questionTextEl.textContent = q.question;
+        optionsContainer.innerHTML = '';
+        const answered = userAnswers[currentQuestionIndex] !== null;
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + idx)}</span>${opt}`;
+            btn.onclick = () => selectOption(idx);
+            
+            if (answered) {
+               btn.classList.add('disabled');
+                if (idx === q.correct) {
+                    btn.classList.add('correct');
+                } else if (idx === userAnswers[currentQuestionIndex]) {
+                    btn.classList.add('incorrect');
+                 }
+            }
+            optionsContainer.appendChild(btn);
+        });
+        prevBtn.disabled = currentQuestionIndex === 0;
+        nextBtn.textContent = (currentQuestionIndex === shuffledQuestions.length - 1) ? 'Finalizar Examen' : 'Siguiente →';
+    }
+
+    function selectOption(selectedIndex) {
+      if (userAnswers[currentQuestionIndex] !== null) return;
+      userAnswers[currentQuestionIndex] = selectedIndex;
+      showQuestion();
+    }
+    
+    function nextQuestion() {
+      if (currentQuestionIndex < shuffledQuestions.length - 1) {
+        currentQuestionIndex++;
+        showQuestion();
+      } else {
+        showResults("¡Examen Completado!");
+      }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    }
+
+    function showResults(title) {
+        clearInterval(timerInterval);
+        examScreen.classList.add('hidden');
+        resultsScreen.classList.remove('hidden');
+
+        resultsTitle.textContent = title;
+        const correctCount = userAnswers.filter((answer, index) => answer === shuffledQuestions[index].correct).length;
+        const totalAnswered = userAnswers.filter(answer => answer !== null).length;
+        const incorrectCount = totalAnswered - correctCount;
+        const score = shuffledQuestions.length > 0 ? Math.round((correctCount / shuffledQuestions.length) * 100) : 0;
+        
+        correctCountEl.textContent = correctCount;
+        incorrectCountEl.textContent = incorrectCount;
+        totalCountEl.textContent = shuffledQuestions.length;
+        finalScoreEl.textContent = `${score}%`;
+
+        if (score >= passMark) {
+            examStatusEl.textContent = 'Aprobado';
+            examStatusEl.className = 'score-value status passed';
+        } else {
+            examStatusEl.textContent = 'Reprobado';
+            examStatusEl.className = 'score-value status failed';
+        }
+        
+        displayIncorrectAnswers();
+    }
+
+    function displayIncorrectAnswers() {
+        incorrectAnswersList.innerHTML = '';
+        const incorrectAnswers = [];
+
+        userAnswers.forEach((answer, index) => {
+            if (answer !== null && answer !== shuffledQuestions[index].correct) {
+                const q = shuffledQuestions[index];
+                incorrectAnswers.push({
+                    questionNumber: index + 1,
+                    question: q.question,
+                    userAnswer: q.options[answer],
+                    correctAnswer: q.options[q.correct]
+                });
+            }
+        });
+        if (incorrectAnswers.length > 0) {
+            reviewSection.classList.remove('hidden');
+            incorrectAnswers.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'incorrect-answer-item';
+                itemEl.innerHTML = `
+                    <p><strong>Pregunta ${item.questionNumber}:</strong> ${item.question}</p>
+                    <p class="user-answer"><strong>Tu respuesta:</strong> ${item.userAnswer}</p>
+                    <p class="correct-answer"><strong>Respuesta correcta:</strong> ${item.correctAnswer}</p>
+                `;
+                incorrectAnswersList.appendChild(itemEl);
+            });
+        } else {
+            reviewSection.classList.add('hidden');
+        }
+    }
+
+    function restartExam() {
+        clearInterval(timerInterval);
+        startScreen.classList.remove('hidden');
+        examScreen.classList.add('hidden');
+        resultsScreen.classList.add('hidden');
+        reviewSection.classList.add('hidden');
+        initializeApp();
+    }
+
+    function startTimer(minutes) {
+        let timeInSeconds = minutes * 60;
+        timerInterval = setInterval(() => {
+            if (timeInSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = "00:00";
+                showResults("¡Se acabó el tiempo!");
+                return;
+               }
+
+            timeInSeconds--;
+            const remMinutes = Math.floor(timeInSeconds / 60);
+            const remSeconds = timeInSeconds % 60;
+            timerDisplay.textContent = `${String(remMinutes).padStart(2, '0')}:${String(remSeconds).padStart(2, '0')}`;
+        }, 1000);
+    }
+    
+    function updateProgress() {
+      const percentage = shuffledQuestions.length > 0 ?
+      ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100 : 0;
+      progressFill.style.width = percentage + '%';
+      progressText.textContent = `Pregunta ${currentQuestionIndex + 1} de ${shuffledQuestions.length}`;
+    }
+
+    // --- INICIAR APP ---
+    initializeApp();
+});
+</script>
+</body>
+</html>
