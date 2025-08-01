@@ -289,13 +289,13 @@
   <div class="container">
     <button id="theme-toggle" title="Cambiar Tema">🌓</button>
     <div class="main-header">
-        <h2 class="main-header-title">Examen de Conducir - Capítulos 3 y 4</h2>
+        <h2 class="main-header-title">Factores Humanos y Seguridad en la Conducción</h2>
     </div>
 
     <div id="start-screen">
       <div class="header">
-        <h1 class="title">🚗 Simulador de Examen</h1>
-        <p class="subtitle">Examen de Conducir - Chile</p>
+        <h1 class="title">📝 Simulador de Examen</h1>
+        <p class="subtitle">Pon a prueba tus conocimientos</p>
       </div>
       <div class="timer-setup">
           <label for="time-select">Selecciona el tiempo:</label>
@@ -390,38 +390,83 @@
 window.addEventListener('DOMContentLoaded', () => {
     // --- BANCO DE PREGUNTAS ---
     let questions = [
-        {
-            question: "¿Qué significa una señal triangular con borde rojo y un ciervo en el centro?",
-            options: ["Cruce de peatones", "Paso de animales", "Zona de descanso"],
-            correct: 1
-        },
-        {
-            question: "¿Cuál es la velocidad máxima permitida en zonas urbanas en Chile, salvo que se indique lo contrario?",
-            options: ["50 km/h", "60 km/h", "70 km/h"],
-            correct: 0
-        },
-        {
-            question: "¿Qué debe hacer un conductor al acercarse a una intersección sin semáforo ni señal de ceda el paso?",
-            options: ["Acelerar para pasar rápido", "Detenerse completamente", "Ceder el paso a los vehículos de la derecha"],
-            correct: 2
-        },
-        {
-            question: "¿Qué indica una línea blanca continua en la carretera?",
-            options: ["Se permite adelantar", "Prohibido adelantar", "Zona de estacionamiento"],
-            correct: 1
-        },
-        {
-            question: "¿Cuál es el propósito principal del cinturón de seguridad?",
-            options: ["Mejorar la comodidad", "Reducir lesiones en caso de accidente", "Cumplir con la normativa"],
-            correct: 1
-        }
+        { question: "¿Por qué es riesgoso realizar actividades simultáneas mientras conduces?", options: ["Porque mejora la capacidad de reacción al mantener la mente ocupada.", "Porque desvía la atención, aumenta la posibilidad de perder el control del vehículo y dificulta enfrentar situaciones imprevistas.", "Porque solo reduce el confort del viaje sin afectar la seguridad."], correct: 1 },
+        { question: "¿Qué fenómeno describe el hecho de percibir visualmente solo aquello que se espera encontrar?", options: ["Percepción selectiva.", "Agudeza visual.", "Memoria sensorial."], correct: 0 },
+        { question: "¿Qué sucede con la pupila del ojo humano en condiciones de oscuridad?", options: ["Se contrae para evitar deslumbramiento.", "Aumenta su tamaño para permitir la entrada de más luz.", "Mantiene un tamaño constante gracias al cristalino."], correct: 1 },
+        { question: "¿Qué tipo de visión es esencial para reconocer objetos en detalle durante la conducción?", options: ["Visión periférica.", "Visión nocturna.", "Visión directa."], correct: 2 },
+        { question: "¿Por qué ocurre la subestimación de la velocidad al conducir vehículos modernos?", options: ["Porque los velocímetros digitales muestran menos cifras.", "Porque estos vehículos son más silenciosos y sin vibraciones, dificultando advertir correctamente la velocidad.", "Porque el parabrisas más inclinado genera una ilusión óptica de lentitud."], correct: 1 },
+        { question: "¿Qué ocurre con el campo visual cuando aumenta la velocidad al conducir?", options: ["Se produce “visión de túnel”, reduciendo el campo visual y la percepción lateral.", "El campo visual se amplía por la adrenalina.", "El campo visual se mantiene constante gracias a la visión periférica."], correct: 0 },
+        { question: "¿Cuál es la razón principal por la cual las personas jóvenes suelen tener mayores riesgos al conducir?", options: ["Por su mejor tiempo de reacción.", "Por falta de experiencia, actitud poco prudente y baja percepción del riesgo.", "Porque los autos que usan son más antiguos y fallan más."], correct: 1 },
+        { question: "¿Qué implica tener responsabilidad al conducir?", options: ["Conducir siempre rápido para no obstaculizar.", "Mostrar consideración hacia otros, seguir normas y afrontar consecuencias.", "Usar el carril izquierdo de forma preferente para “agilizar” el tránsito."], correct: 1 },
+        { question: "¿Qué efecto tiene la presión social sobre las decisiones de conducción?", options: ["Mejora la prudencia porque hay más vigilancia de pares.", "Puede provocar comportamientos arriesgados por influencia del grupo.", "Solo afecta a conductores novatos, no a experimentados."], correct: 1 },
+        { question: "¿Qué efectos inmediatos tiene el consumo de alcohol en las capacidades del conductor?", options: ["Mejora la visión nocturna a corto plazo.", "Reduce visión periférica, atención, tiempo de reacción e interpretación/decisión.", "Solo afecta la coordinación motriz, pero no la interpretación de señales."], correct: 1 },
+        { question: "¿Cuál es el límite legal en Chile para ser considerado bajo la influencia del alcohol?", options: ["Entre 0.31 y 0.79 g/L de alcohol en sangre.", "Entre 0.05 y 0.30 g/L de alcohol en sangre.", "Entre 0.80 y 1.20 g/L de alcohol en sangre."], correct: 0 },
+        { question: "¿Qué factores influyen en la tasa de alcohol en la sangre?", options: ["Únicamente el tipo de licor consumido.", "Cantidad ingerida, masa corporal, sexo, tiempo de ingesta, alimentos y bebidas carbonatadas.", "Exclusivamente el metabolismo basal de cada persona."], correct: 1 },
+        { question: "¿Por qué es peligroso conducir bajo el efecto de drogas?", options: ["Porque reducen la somnolencia y eso distrae.", "Porque alteran percepción, atención, coordinación; aumentan impulsividad y reducen la evaluación de riesgos.", "Porque mejoran la concentración a corto plazo y eso genera exceso de confianza."], correct: 1 },
+        { question: "¿Qué síntomas produce el estrés que afectan la conducción segura?", options: ["Aumento de agudeza visual y mayor calma.", "Cansancio, somnolencia, ansiedad, reacciones impulsivas y reducción del campo de atención.", "Solo dolor de espalda, sin efectos cognitivos relevantes."], correct: 1 },
+        { question: "¿Cómo afecta la depresión a la capacidad de conducción?", options: ["Provoca somnolencia, reduce reacción, disminuye concentración y puede llevar a reacciones impulsivas o desproporcionadas.", "Mejora la atención por mayor preocupación.", "No afecta si se duerme bien la noche anterior."], correct: 0 },
+        { question: "¿Qué materiales reflejan mejor la luz aumentando la visibilidad?", options: ["Los materiales mate, que absorben la luz.", "Los materiales reflectantes, que reflejan entre 90% y 95% de la luz.", "La pintura negra mate, más visible de noche."], correct: 1 },
+        { question: "¿Qué es la visión periférica?", options: ["La que permite ver detalles finos y colores con precisión.", "La que permite descubrir objetos y movimientos fuera del enfoque directo.", "La que permite ver en la oscuridad sin enfocar."], correct: 1 },
+        { question: "¿Cuál es el papel de la retina en la visión?", options: ["Regular el tamaño de la pupila ante la luz.", "Lubricar la superficie ocular con lágrimas.", "Transformar los rayos de luz en señales eléctricas para el cerebro."], correct: 2 },
+        { question: "¿Qué células permiten ver colores y detalles finos?", options: ["Bastones, distribuidos en toda la retina.", "Conos, ubicados en la mácula de la retina.", "Células ganglionares, que forman el nervio óptico."], correct: 1 },
+        { question: "¿Qué es la visión directa?", options: ["La que permite reconocer objetos en detalle al enfocarlos directamente.", "La que permite percibir objetos fuera del foco central.", "La que sirve para ver en baja luminosidad sin necesidad de enfocar."], correct: 0 },
+        { question: "¿Qué puede ocurrir al manejar bajo estrés?", options: ["Se incrementa la precisión en las maniobras por la adrenalina.", "Se pueden producir reacciones impulsivas, fatiga mental y reducción del campo visual.", "Solo aparece cansancio físico, sin afectar la atención."], correct: 1 },
+        { question: "¿Cuál es el impacto del cansancio en la conducción?", options: ["Mejora la coordinación porque reduce la ansiedad.", "Disminuye la concentración, aumenta el tiempo de reacción y genera conductas imprudentes.", "Solo provoca dolor muscular, sin efectos en la toma de decisiones."], correct: 1 },
+        { question: "¿Cuándo es más probable sentir somnolencia al conducir?", options: ["Al atardecer, entre 18:00 y 19:00 exclusivamente.", "Durante la madrugada y las primeras horas de la tarde.", "Solo después de 8 horas seguidas de manejo."], correct: 1 },
+        { question: "¿Qué debes hacer si sientes somnolencia al volante?", options: ["Abrir la ventana y subir la música.", "Detenerte en un lugar seguro y descansar unos 20 minutos.", "Beber agua y continuar hasta el siguiente peaje."], correct: 1 },
+        { question: "¿Qué efectos pueden tener ciertos medicamentos sobre la conducción?", options: ["Mejoran la visión de noche al dilatar la pupila.", "Somnolencia, mareos y disminución de la concentración.", "Únicamente resequedad bucal, sin efectos cognitivos."], correct: 1 },
+        { question: "¿Qué es la empatía en la conducción?", options: ["Exigir prioridad propia para mantener el flujo.", "Comprender y considerar las necesidades y acciones de otros usuarios de la vía.", "Ceder siempre el paso aunque no corresponda legalmente."], correct: 1 },
+        { question: "¿Qué efecto tiene la impulsividad al conducir?", options: ["Favorece decisiones rápidas y más seguras.", "Provoca acciones sin pensar que aumentan el riesgo de siniestros.", "Reduce la probabilidad de distracción."], correct: 1 },
+        { question: "¿Cómo influye la represión en la conducción?", options: ["Ayuda a mantener la concentración en todo momento.", "Puede llevar a ignorar o minimizar riesgos evidentes.", "Solo afecta a conductores novatos."], correct: 1 },
+        { question: "¿Qué es el punto ciego del ojo y cómo afecta la conducción?", options: ["Un área de visión aumentada que anticipa peligros.", "Una zona sin percepción por la entrada del nervio óptico que puede impedir ver peligros.", "Un reflejo que mejora la detección de luces."], correct: 1 },
+        { question: "¿Qué debe hacer quien tiene una enfermedad crónica y desea conducir?", options: ["Conducir solo trayectos cortos para “probarse”.", "Consultar al médico, reconocer síntomas y evitar conducir en fases agudas o sin tratamiento.", "Tomar café y descansar más antes de salir."], correct: 1 },
+        { question: "¿Qué provocan los antihistamínicos en personas con alergias al conducir?", options: ["Mejoran la ventilación pulmonar y la atención.", "Mayor probabilidad de somnolencia al volante.", "Solo sequedad nasal sin impacto en la conducción."], correct: 1 },
+        { question: "¿Qué se recomienda para quienes trabajan en turnos cambiantes?", options: ["Conducir siempre de día.", "Reconocer periodos de somnolencia y no conducir si están fatigados o desvelados.", "Dormir 4 horas y consumir bebidas energéticas."], correct: 1 },
+        { question: "¿Cuál es uno de los primeros signos de fatiga en la conducción?", options: ["Incremento de la euforia.", "Bostezos y sensación de pesadez mental.", "Aumento de la visión periférica."], correct: 1 },
+        { question: "A 90 km/h, ¿qué puede ocurrir si estornudas durante 3 segundos?", options: ["El vehículo recorre entre 50 y 75 metros sin control.", "El vehículo apenas avanza 10 metros sin control.", "No hay desplazamiento significativo sin control."], correct: 0 },
+        { question: "¿Qué pausa recomienda el documento en viajes largos?", options: ["5 minutos cada hora.", "20 minutos cada 2 horas o cada 200 km.", "40 minutos solo al mediodía."], correct: 1 },
+        { question: "¿Cómo afecta un diseño ergonómico inadecuado del vehículo?", options: ["Mejora la postura y reduce la fatiga.", "Dificulta la conducción y genera fatiga.", "Solo afecta la estética interior."], correct: 1 },
+        { question: "¿Qué efectos tiene la pasta base sobre la conducción?", options: ["Aumenta la atención sostenida.", "Falta de coordinación, alucinaciones, impulsividad y pérdida de contacto con la realidad.", "Mejora la reacción ante estímulos."], correct: 1 },
+        { question: "¿Qué droga puede causar visión borrosa, deslumbramientos e ilusiones ópticas?", options: ["Cannabis.", "Éxtasis.", "Alcohol a dosis moderadas."], correct: 1 },
+        { question: "¿Qué puede provocar el deseo de validarse como conductor ante otros?", options: ["Conducción más defensiva.", "Maniobras arriesgadas para impresionar a los acompañantes.", "Mejor cumplimiento de normas."], correct: 1 },
+        { question: "¿Qué función cumple el cristalino?", options: ["Regular la entrada de luz como un diafragma.", "Refractar la luz para enfocar la imagen mediante músculos y fibras.", "Producir lágrimas para lubricar el ojo."], correct: 1 },
+        { question: "¿Por qué es importante mantener limpia la cabina si eres alérgico?", options: ["Para evitar empañamiento de vidrios.", "Reduce alérgenos (polvo, pelos) que pueden provocar crisis.", "Disminuye ruidos del motor."], correct: 1 },
+        { question: "¿Qué actitud se recomienda ante los errores al volante?", options: ["Minimizar los errores para no perder confianza.", "Reconocerlos y aprender de ellos para mejorar la conducción.", "Culpar a factores externos (tránsito, clima)."], correct: 1 },
+        { question: "¿Qué efecto tiene el alcohol sobre los músculos oculares?", options: ["Fortalece el enfoque en visión cercana.", "Dificulta el enfoque y puede generar visión doble.", "Mejora la visión periférica."], correct: 1 },
+        { question: "¿Qué puede causar mezclar medicamentos con alcohol?", options: ["Neutralizar efectos adversos mutuos.", "Aumentar somnolencia, mareos y pérdida de coordinación.", "Mejorar el estado de alerta temporalmente."], correct: 1 },
+        { question: "¿Qué consecuencias puede tener conducir con licencia cancelada en Chile?", options: ["Solo una multa administrativa menor.", "Es un delito grave que puede conllevar penas de cárcel.", "Suspensión de 24 horas sin registro."], correct: 1 },
+        { question: "¿Qué es el “punto de encuentro” y cómo se estima mal?", options: ["Es el sitio donde se cruzan dos vehículos; suele estimarse mal si uno va más rápido.", "Es el área donde se escucha mejor el claxon.", "Es el lugar donde termina un adelantamiento seguro."], correct: 0 },
+        { question: "¿Qué provoca conducir por un camino desconocido?", options: ["Reduce la carga mental por la curiosidad.", "Exige más atención durante todo el recorrido, aumentando la fatiga mental.", "Disminuye la necesidad de mirar espejos."], correct: 1 },
+        { question: "¿Cómo influye el mal estado del pavimento?", options: ["No influye si la velocidad es constante.", "Genera vibraciones e incrementa el cansancio.", "Mejora el agarre y la concentración."], correct: 1 },
+        { question: "¿Qué efecto puede tener una mala ventilación en el vehículo?", options: ["Mantiene más caliente el habitáculo y así despierta.", "Aumenta somnolencia y fatiga del conductor.", "Solo empeora el olor ambiental."], correct: 1 },
+        { question: "¿Por qué evitar zonas húmedas si eres alérgico?", options: ["Se acumula más smog urbano.", "Hay mayor presencia de polen y alérgenos que afectan la conducción.", "Porque el pavimento siempre está resbaloso."], correct: 1 },
+        { question: "¿Qué acciones pueden indicar fatiga al volante?", options: ["Risa espontánea y euforia.", "Cambios de postura, bostezos frecuentes, movimientos nerviosos o repetitivos.", "Incremento del control fino del volante."], correct: 1 },
+        { question: "¿Cómo se manifiestan alteraciones cognitivas por fatiga?", options: ["Con decisiones más arriesgadas y menor tiempo de reacción.", "Con mejor memoria a corto plazo.", "Con hipersensibilidad auditiva útil."], correct: 0 },
+        { question: "¿Por qué es riesgoso el estrés prolongado al conducir?", options: ["Porque aumenta la tolerancia a la frustración.", "Porque puede provocar reacciones impulsivas y disminuir la atención.", "Porque hace más predecible el tráfico."], correct: 1 },
+        { question: "¿Qué es el autocontrol en la conducción?", options: ["Manejar siempre a la velocidad máxima permitida.", "Mantener la calma y tomar decisiones racionales en situaciones difíciles.", "Evitar mirar espejos para reducir distracciones."], correct: 1 },
+        { question: "¿Qué recomienda el documento sobre alcohol y bebidas carbonatadas?", options: ["No hay interacción relevante.", "Pueden aumentar la absorción del alcohol y su efecto.", "Disminuyen el nivel de alcohol en sangre."], correct: 1 },
+        { question: "¿Por qué el alcohol puede afectar más a las mujeres?", options: ["Por mayor masa muscular.", "Por diferencias metabólicas y hormonales, elevando más la tasa en sangre.", "Por tener menor sensibilidad al gusto del alcohol."], correct: 1 },
+        { question: "¿Qué significa tener una actitud responsable al volante?", options: ["Priorizar llegar rápido por sobre la seguridad.", "Cumplir normas, prever riesgos y proteger a todos los usuarios.", "Conducir por el carril izquierdo para “agilizar” el tránsito."], correct: 1 },
+        { question: "¿Qué puede generar el sentimiento de inseguridad en una persona conductora?", options: ["Conducción más prudente y lenta.", "Actuar agresivamente o asumir riesgos para demostrar capacidad.", "Mayor uso del espejo retrovisor central."], correct: 1 },
+        { question: "¿Qué es el mecanismo de represión en la conducción?", options: ["Superar miedos mediante respiración profunda.", "Ignorar conscientemente los riesgos por enfocarse solo en “llegar”.", "Frenar más fuerte ante cada señal."], correct: 1 },
+        { question: "Si hay un siniestro conduciendo en estado de ebriedad, ¿qué puede ocurrir según la Ley Emilia?", options: ["Únicamente una multa menor.", "Penas de cárcel, suspensión de licencia y multas.", "Curso de sensibilización sin sanciones adicionales."], correct: 1 },
+        { question: "¿Qué se recomienda si comienzas un medicamento nuevo antes de conducir?", options: ["Conducir en rutas conocidas para “acostumbrarse”.", "Consultar al médico y evitar conducir si provoca alteraciones.", "Tomar café para contrarrestar posibles efectos."], correct: 1 },
+        { question: "¿Cuál es la recomendación clave para personas fatigadas o desveladas por turnos?", options: ["Manejar solo en vías con buena iluminación.", "No conducir si están fatigados o desvelados y reconocer sus periodos de somnolencia.", "Evitar solo autopistas y preferir calles locales."], correct: 1 },
+        { question: "¿Qué relación hay entre estornudar y el control del vehículo?", options: ["Estornudar mejora reflejos por activación muscular.", "Estornudar puede dejarte sin control decenas de metros a velocidad de autopista.", "No hay relación medible entre estornudos y control."], correct: 1 },
+        { question: "¿Por qué se aconseja planificar descansos en viajes largos?", options: ["Para reducir el consumo de combustible.", "Para prevenir la fatiga y la somnolencia al volante.", "Para estirar las piernas por comodidad, sin impacto en la seguridad."], correct: 1 },
+        { question: "¿Qué papel juega la “validación social” en decisiones peligrosas al conducir?", options: ["No influye si se respetan los límites de velocidad.", "Puede inducir maniobras para impresionar a otros.", "Solo afecta a adolescentes, no a adultos."], correct: 1 },
+        { question: "¿Qué combinación incrementa efectos negativos en conducción?", options: ["Analgésicos suaves con agua.", "Medicamentos con alcohol.", "Antihistamínicos con alimentos grasos."], correct: 1 },
+        { question: "¿Qué recomendación específica se da para carreteras rectas y monótonas de noche?", options: ["Aumentar la velocidad para terminar antes.", "Estar atento a síntomas de fatiga y hacer pausas frecuentes.", "Circular pegado a la berma para “descansar la vista”."], correct: 1 },
+        { question: "¿Qué hábito de higiene del vehículo beneficia a personas alérgicas?", options: ["Usar aromatizantes fuertes.", "Mantener limpia la cabina para reducir alérgenos.", "Mantener alfombras húmedas para atrapar polvo."], correct: 1 },
+        { question: "¿Cuál es una señal conductual temprana de fatiga?", options: ["Fijar la mirada sin parpadear durante minutos.", "Bostezos y movimientos nerviosos o repetitivos.", "Mayor precisión en cambios de marcha."], correct: 1 },
+        { question: "¿Qué consejo práctico resume la respuesta ante señales de fatiga al conducir?", options: ["Continuar a menor velocidad pero sin detenerse.", "Detenerse en un lugar seguro y descansar antes de continuar.", "Activar luces altas para “estimular la vista”."], correct: 1 }
     ];
     // --- VARIABLES GLOBALES ---
     let currentQuestionIndex;
     let userAnswers;
     let timerInterval;
     let shuffledQuestions = [];
-    let passMark;
+    let passMark; // NUEVO
 
     // --- ELEMENTOS DEL DOM ---
     const startScreen = document.getElementById('start-screen');
@@ -433,7 +478,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart-btn');
     const resetExamBtn = document.getElementById('reset-exam-btn');
     const timeSelect = document.getElementById('time-select');
-    const passMarkSelect = document.getElementById('pass-mark-select');
+    const passMarkSelect = document.getElementById('pass-mark-select'); // NUEVO
     const startText = document.getElementById('start-text');
     const timerDisplay = document.getElementById('timer-display');
     const questionNumberEl = document.getElementById('question-number');
@@ -519,6 +564,7 @@ window.addEventListener('DOMContentLoaded', () => {
       examScreen.classList.remove('hidden');
       reviewSection.classList.add('hidden');
       
+      // NUEVO: Capturar el valor de la nota de aprobación
       passMark = parseInt(passMarkSelect.value, 10);
       
       const durationMinutes = parseInt(timeSelect.value, 10);
@@ -593,6 +639,7 @@ window.addEventListener('DOMContentLoaded', () => {
         totalCountEl.textContent = shuffledQuestions.length;
         finalScoreEl.textContent = `${score}%`;
 
+        // NUEVO: Usar la variable 'passMark' en lugar de un valor fijo
         if (score >= passMark) {
             examStatusEl.textContent = 'Aprobado';
             examStatusEl.className = 'score-value status passed';
@@ -642,7 +689,7 @@ window.addEventListener('DOMContentLoaded', () => {
         examScreen.classList.add('hidden');
         resultsScreen.classList.add('hidden');
         reviewSection.classList.add('hidden');
-        initializeApp();
+        initializeApp(); // Re-inicializamos para verificar si hay preguntas
     }
 
     function startTimer(minutes) {
@@ -653,7 +700,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 timerDisplay.textContent = "00:00";
                 showResults("¡Se acabó el tiempo!");
                 return;
-            }
+               }
 
             timeInSeconds--;
             const remMinutes = Math.floor(timeInSeconds / 60);
