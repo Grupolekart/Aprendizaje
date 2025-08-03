@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Deportivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg-color: #16213e;
+            --primary-color: #0f3460;
+            --secondary-color: #e94560;
+            --text-color: #e0e0e0;
+            --text-muted-color: #a0a0a0;
+            --success-color: #28a745; /* Brighter Green */
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid var(--primary-color);
+            padding-bottom: 1.5rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-muted-color);
+            max-width: 800px;
+            margin: 0.5rem auto 0;
+        }
+        
+        .date-stamp {
+            font-size: 0.9rem;
+            color: var(--text-muted-color);
+            margin-top: 0.5rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            background-color: var(--card-bg-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--primary-color);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-muted-color);
+        }
+
+        .filter-group input[type="date"],
+        .filter-group select {
+            background-color: var(--bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+        }
+
+        .filter-group input[type="date"]:disabled {
+            background-color: #2a2a3e;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .filter-group input[type="date"]:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-main-action {
+            background-color: var(--success-color);
+            color: white;
+            grid-column: 1 / -1; /* Span all columns */
+            padding: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .btn-main-action:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--primary-color);
+            color: white;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .api-config {
+            background-color: var(--card-bg-color);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--primary-color);
+            margin-bottom: 2rem;
+            display: none; /* Hidden by default */
+        }
+
+        .api-option {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+        }
+        .api-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .api-free {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-color: var(--success-color);
+        }
+
+        .api-premium {
+            background-color: rgba(233, 69, 96, 0.1);
+            border-color: var(--secondary-color);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.75rem;
+            background-color: var(--bg-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        h2, h3 {
+            font-weight: 700;
+            color: var(--text-color);
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 1rem;
+        }
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--primary-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--primary-color);
+        }
+        
+        .card-header .sport-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        
+        .team-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header .team-names {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .match-date {
+            font-size: 0.9rem;
+            color: var(--text-muted-color);
+            margin-top: 0.25rem;
+        }
+
+        .probabilities {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .prob-item { flex: 1; }
+        .prob-item .value { font-size: 1.8rem; font-weight: 700; }
+        .prob-item .label { font-size: 0.9rem; color: var(--text-muted-color); }
+
+        .card-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--primary-color);
+            font-size: 1rem;
+        }
+        
+        .bet-info {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid var(--success-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .bet-info.no-value-bet {
+            background-color: rgba(15, 52, 96, 0.3);
+            border: 1px dashed var(--primary-color);
+        }
+
+        .bet-info.no-value-bet .bet-pick span {
+            color: var(--text-muted-color);
+            font-style: italic;
+        }
+
+        .analysis-info {
+            background-color: rgba(15, 52, 96, 0.3);
+            border: 1px solid var(--primary-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .bet-info .bet-pick { font-weight: 700; font-size: 1.1rem; }
+        .bet-info .bet-pick span { color: var(--success-color); }
+        .bet-details { display: flex; justify-content: space-between; margin-top: 0.5rem; color: var(--text-muted-color); }
+        .ev-positive { color: var(--success-color); font-weight: bold; }
+        .ev-negative { color: var(--danger-color); font-weight: bold; }
+        .no-bet { color: var(--text-muted-color); font-style: italic; }
+
+        .tag {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .tag-alta { background-color: var(--success-color); }
+        .tag-baja { background-color: #6c757d; }
+
+        .report-section {
+            background: var(--card-bg-color);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--primary-color);
+        }
+        
+        .report-section ul { list-style: none; padding: 0; }
+        .report-section li { padding: 0.5rem 0; display: flex; justify-content: space-between; border-bottom: 1px solid var(--primary-color); }
+        .report-section li:last-child { border-bottom: none; }
+        .report-section li span:last-child { font-weight: bold; color: var(--secondary-color); }
+
+        .bankroll-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .bankroll-item { text-align: center; }
+        .bankroll-value { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .bankroll-label { color: var(--text-muted-color); font-size: 0.9rem; }
+        
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--primary-color);
+            color: var(--text-muted-color);
+        }
+
+        .loading, .error, .no-matches {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted-color);
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            border: 1px dashed var(--primary-color);
+            margin: 1rem 0;
+        }
+        
+        .no-matches p {
+            font-size: 1.2rem;
+        }
+
+        .error {
+            background-color: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s, transform 0.5s;
+        }
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -10px);
+        }
+        .toast.success { background-color: var(--success-color); }
+        .toast.error { background-color: var(--danger-color); }
+
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            header h1 { font-size: 2rem; }
+            .filters { flex-direction: column; align-items: stretch; }
+            .controls { display: flex; flex-direction: column; }
+            .btn { flex: 1; }
+            .input-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema Unificado de Análisis Deportivo (SUAD) v2.1</h1>
+            <p>Análisis de partidos con el motor <strong>Código de Análisis de Fútbol – CAF v4.10 COMPLETO</strong>. Incluye gestión de bankroll, análisis de EV y sistema de apuestas para múltiples deportes.</p>
+            <div class="date-stamp">Análisis del: <span id="current-date"></span></div>
+        </header>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="period-selector">Período de Análisis</label>
+                <select id="period-selector">
+                    <option value="daily">Análisis Diario</option>
+                    <option value="weekly">Próximos 7 Días</option>
+                    <option value="biweekly">Próximos 15 Días</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="date-selector">Seleccionar Fecha</label>
+                <input type="date" id="date-selector">
+            </div>
+            <div class="filter-group">
+                <label for="sport-selector">Seleccionar Deporte</label>
+                <select id="sport-selector">
+                    <option value="all">Todos los deportes</option>
+                    <option value="Soccer">Fútbol</option>
+                    <option value="Basketball">Baloncesto</option>
+                    <option value="American Football">Fútbol Americano</option>
+                    <option value="Baseball">Béisbol</option>
+                    <option value="Tennis">Tenis</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="api-config" id="api-config">
+            <h3 style="color: var(--secondary-color); margin-bottom: 1rem; margin-top: 0; border: none; padding: 0;">
+                ⚙️ Configuración de APIs Deportivas
+            </h3>
+            
+            <div class="api-option api-free">
+                <h4 style="color: var(--success-color); margin-bottom: 0.5rem;">
+                    🆓 API-FOOTBALL (RapidAPI)
+                </h4>
+                <p style="color: var(--text-muted-color); margin-bottom: 1rem; font-size: 0.9rem;">
+                    Conexión gratuita con 100 llamadas/día. Ve a <strong>rapidapi.com/api-sports/api/api-football</strong>
+                </p>
+                <div class="input-group">
+                    <input type="password" id="rapidapi-key" placeholder="Tu RapidAPI Key">
+                    <button class="btn btn-secondary" onclick="App.connectRapidAPI()">
+                        Conectar RapidAPI
+                    </button>
+                </div>
+            </div>
+
+            <div class="api-option api-premium">
+                <h4 style="color: var(--secondary-color); margin-bottom: 0.5rem;">
+                    ⭐ API Deportiva Premium
+                </h4>
+                <p style="color: var(--text-muted-color); margin-bottom: 1rem; font-size: 0.9rem;">
+                    Para datos más completos, ingresa tu API key de cualquier servicio deportivo:
+                </p>
+                <div class="input-group">
+                    <input type="password" id="api-key" placeholder="Tu API Key (p. ej. api-sports.io)">
+                    <button class="btn btn-secondary" onclick="App.connectAPI()">
+                        Conectar API
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-main-action" onclick="App.refreshData()" aria-label="Iniciar análisis deportivo">
+                ▶️ Iniciar Análisis
+            </button>
+            <button class="btn btn-secondary" onclick="UI_CONTROLLER.toggleAPIConfig()" aria-label="Configurar API">
+                ⚙️ Configurar API
+            </button>
+            <button class="btn btn-secondary" onclick="App.generateReport()" aria-label="Exportar reporte">
+                📄 Exportar Reporte
+            </button>
+        </div>
+
+        <main>
+            <h2>🏈 Análisis Multi-Deporte</h2>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <p>🔄 Cargando datos deportivos...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="no-matches" class="no-matches" style="display: block;">
+                <p>Listo para analizar. Ajusta los filtros y presiona "Iniciar Análisis".</p>
+            </div>
+
+            <div class="grid" id="matches-grid"></div>
+
+            <h2 id="bankroll-title" style="display:none;">📊 Estado del Bankroll y Métricas</h2>
+            <div class="report-section" id="bankroll-section" style="display:none;">
+                <div class="bankroll-grid">
+                    <div class="bankroll-item">
+                        <div class="bankroll-value" style="color: var(--secondary-color);" id="current-bankroll">$1,000.00</div>
+                        <div class="bankroll-label">Bankroll Actual</div>
+                    </div>
+                    <div class="bankroll-item">
+                        <div class="bankroll-value" style="color: var(--success-color);" id="viable-bets">0</div>
+                        <div class="bankroll-label">Apuestas Viables</div>
+                    </div>
+                    <div class="bankroll-item">
+                        <div class="bankroll-value" style="color: var(--warning-color);" id="drawdown">0.0%</div>
+                        <div class="bankroll-label">Drawdown</div>
+                    </div>
+                    <div class="bankroll-item">
+                        <div class="bankroll-value" style="color: var(--secondary-color);" id="total-stake">$0.00</div>
+                        <div class="bankroll-label">Stake Total</div>
+                    </div>
+                </div>
+
+                <div id="summary-section"></div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Generado por SUAD v2.1 con CAF v4.10 completo. <span id="data-source"></span></p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">La fuente de datos por defecto es TheSportsDB (gratuita). Para mejores resultados, configura una API premium.</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // =================================================================================
+        // --- ⚙️ MOTOR DE ANÁLISIS (ANALYSIS_ENGINE) ---
+        // =================================================================================
+        const ANALYSIS_ENGINE = {
+            
+            analyzeMatch: function(event) {
+                const sport = event.strSport || 'Soccer';
+                let analysis;
+
+                if (sport === 'Basketball') {
+                    analysis = this.runBasketballModel(event);
+                } else if (sport === 'Baseball') {
+                    analysis = this.runBaseballModel(event);
+                } else if (sport === 'Soccer') {
+                    analysis = this.runSoccerModel(event);
+                } else if (sport === 'Tennis') {
+                    analysis = this.runTennisModel(event);
+                } else if (sport === 'American Football') {
+                    analysis = this.runAmericanFootballModel(event);
+                }
+                else {
+                    analysis = this.runDefaultModel(event);
+                }
+
+                return {
+                    homeTeam: event.strHomeTeam || event.teams?.home?.name || 'Equipo Local',
+                    awayTeam: event.strAwayTeam || event.teams?.away?.name || 'Equipo Visitante',
+                    sport: sport,
+                    date: event.dateEvent || event.fixture?.date || new Date().toISOString().split('T')[0],
+                    league: event.strLeague || event.league?.name || 'Liga',
+                    status: event.strStatus || event.fixture?.status?.long || 'Programado',
+                    ...analysis
+                };
+            },
+
+            runDefaultModel: function(event) {
+                const probs = this.calculateDefaultProbabilities(event);
+                const odds = this.calculateOdds(probs);
+                const ev = this.calculateEV(probs, odds);
+                const bet = this.getBetRecommendation(ev, probs, odds);
+
+                return { probs, odds, ev, prediction: this.getPrediction(probs), bet };
+            },
+
+            calculateDefaultProbabilities: function(event) {
+                const homeTeam = event.strHomeTeam || event.teams?.home?.name || 'Home';
+                const awayTeam = event.strAwayTeam || event.teams?.away?.name || 'Away';
+                
+                const hash = s => s.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                const seed = Math.abs(hash(homeTeam + awayTeam));
+                const pseudoRandom = (s) => (Math.sin(s) * 10000) % 1;
+
+                let home = 40 + pseudoRandom(seed) * 20;
+                let away = 40 + pseudoRandom(seed + 1) * 20;
+                let draw = 0;
+
+                const total = home + away;
+                return {
+                    home: parseFloat((home / total * 100).toFixed(1)),
+                    away: parseFloat((away / total * 100).toFixed(1)),
+                    draw: 0,
+                };
+            },
+            
+            runSoccerModel: function(event) {
+                const CAP_MAX = 0.75, TIGHT_DIFF = 0.07, MIN_EV = 0.01;
+                const homeTeam = event.strHomeTeam || event.teams?.home?.name || 'Home';
+                const awayTeam = event.strAwayTeam || event.teams?.away?.name || 'Away';
+
+                const hash = s => s.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                const seed = Math.abs(hash(homeTeam + awayTeam));
+                const pseudoRandom = (s) => (Math.sin(s) * 10000) % 1;
+                
+                const xi_match = pseudoRandom(seed) * 0.2 + 0.8; 
+                const league_draw_rate = pseudoRandom(seed + 1) * 0.15 + 0.20;
+                const unbeaten_home = Math.floor(pseudoRandom(seed + 2) * 10);
+
+                let base_probs = this.calculateDefaultProbabilities(event);
+                base_probs.draw = 100 - base_probs.home - base_probs.away;
+                
+                let total = base_probs.home + base_probs.away + base_probs.draw;
+                base_probs = { home: base_probs.home / total, away: base_probs.away / total, draw: base_probs.draw / total };
+
+                let { home: p_h, away: p_a, draw: p_d } = base_probs;
+                
+                if (unbeaten_home >= 7) p_h += 0.04;
+                if (league_draw_rate >= 0.28 && Math.abs(p_h - p_a) <= TIGHT_DIFF) { p_d += 0.05; p_h -= 0.025; p_a -= 0.025; }
+                
+                let adjusted_probs = { home: p_h, away: p_a, draw: p_d };
+
+                if (xi_match < 0.90) {
+                    const key_max = Object.keys(adjusted_probs).reduce((a, b) => adjusted_probs[a] > adjusted_probs[b] ? a : b);
+                    adjusted_probs[key_max] = Math.max(0.0, adjusted_probs[key_max] - 0.05);
+                }
+
+                for (const k of ['home', 'away']) {
+                    if (adjusted_probs[k] > CAP_MAX) {
+                        const excess = adjusted_probs[k] - CAP_MAX;
+                        adjusted_probs[k] = CAP_MAX;
+                        adjusted_probs.draw += excess;
+                    }
+                }
+                
+                total = Object.values(adjusted_probs).reduce((sum, val) => sum + val, 0);
+                const final_probs = {
+                    home: parseFloat((adjusted_probs.home / total * 100).toFixed(1)),
+                    away: parseFloat((adjusted_probs.away / total * 100).toFixed(1)),
+                    draw: parseFloat((adjusted_probs.draw / total * 100).toFixed(1)),
+                };
+
+                const odds = this.calculateOdds(final_probs);
+                const ev = this.calculateEV(final_probs, odds);
+                const bet = this.getBetRecommendation(ev, final_probs, odds, 0.5, true, MIN_EV);
+
+                return { probs: final_probs, odds, ev, prediction: this.getPrediction(final_probs), bet };
+            },
+
+            runBasketballModel: function(event) {
+                const WEIGHTS = { form_reciente: 0.20, eficiencia_tiro: 0.12, varianza_triple: 0.05, posesiones_extra: 0.12, crash_rate: 0.02, mismatch_height: 0.02, paint_pressure: 0.01, ritmo_pace: 0.04, lesiones_rotacion: 0.18, fatiga: 0.05, descanso_viaje: 0.07, localia_altitud: 0.04, head_to_head: 0.01, coach_elo: 0.03, sinergia_2man: 0.04, disrupt_defense: 0.03 };
+                const logistic = (x) => 1 / (1 + Math.exp(-x));
+                
+                const createTeamMetrics = (teamName) => {
+                    const hash = s => s.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                    const seed = Math.abs(hash(teamName));
+                    const pseudoRandom = (s, range = 4) => (Math.sin(s) * 10000) % range - (range / 2);
+                    let metrics = {};
+                    Object.keys(WEIGHTS).forEach((key, i) => { metrics[key] = pseudoRandom(seed + i); });
+                    return metrics;
+                };
+
+                const teamA_metrics = createTeamMetrics(event.strHomeTeam);
+                const teamB_metrics = createTeamMetrics(event.strAwayTeam);
+
+                const getTeamIndex = (metrics) => Object.keys(WEIGHTS).reduce((index, key) => index + (metrics[key] || 0) * WEIGHTS[key], 0);
+
+                const delta = getTeamIndex(teamA_metrics) - getTeamIndex(teamB_metrics);
+                const probA = logistic(delta);
+                
+                const runs = 1000;
+                let draws = Array.from({length: runs}, () => delta + (Math.random() - 0.5) * 2);
+                const mcProbs = draws.map(d => logistic(d));
+                const meanProb = mcProbs.reduce((a, b) => a + b) / runs;
+                const stdDevProb = Math.sqrt(mcProbs.map(p => Math.pow(p - meanProb, 2)).reduce((a, b) => a + b) / runs);
+                const alta_flag = (Math.max(probA, 1 - probA) >= 0.55) && (stdDevProb <= 0.07);
+
+                const probs = { home: parseFloat((probA * 100).toFixed(1)), away: parseFloat(((1 - probA) * 100).toFixed(1)), draw: 0, alta_flag: alta_flag };
+                const odds = this.calculateOdds(probs);
+                const ev = this.calculateEV(probs, odds);
+                const bet = this.getBetRecommendation(ev, probs, odds);
+
+                return { probs, odds, ev, prediction: this.getPrediction(probs), bet };
+            },
+
+            runBaseballModel: function(event) {
+                const BETA = 0.025, ALPHA = -1.16, EV_THRESHOLD = 0.05, MAX_STAKE_FRAC = 0.20;
+                const BASE_WEIGHTS = { starter: 25, bullpen: 15, offense: 15, defense: 5, park: 8, fatigue: 7, streak: 5, injury: 4, pressure: 1, linemove: 3, odds2h: 1, bullpenfresh: 1 };
+                const sigmoid = (x) => 1 / (1 + Math.exp(-(BETA * x + ALPHA)));
+                
+                const buildIndex = (game) => {
+                    const weights = { ...BASE_WEIGHTS };
+                    if (Math.random() < 0.05) { weights.starter *= 0.4; }
+                    const hash = s => s.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                    const seed = Math.abs(hash(game.strHomeTeam + game.strAwayTeam));
+                    const pseudoRandom = (s, min=40, max=60) => min + ((Math.sin(s) * 10000) % 1) * (max - min);
+                    let factors = {};
+                    Object.keys(weights).forEach((key, i) => { factors[key] = pseudoRandom(seed + i); });
+                    factors.bullpenfresh = 100 * (1 - pseudoRandom(seed - 1, 50, 200) / 300);
+                    return Object.keys(weights).reduce((index, key) => index + (factors[key] * weights[key]), 0) / 100;
+                };
+
+                const tempProbs = this.calculateDefaultProbabilities(event);
+                const fairOdds = { home: 1 / (tempProbs.home / 100), away: 1 / (tempProbs.away / 100) };
+                const index = buildIndex(event);
+                let probHome = sigmoid(index), probAway = 1 - probHome;
+                
+                if (probAway >= 0.55 && probAway <= 0.60) probAway -= 0.01;
+                if (probHome >= 0.55 && probHome <= 0.60) probHome -= 0.01;
+
+                const evHome = probHome * fairOdds.home - 1, evAway = probAway * fairOdds.away - 1;
+                let ev = 0, prediction = 'NO_BET';
+                if (evHome >= EV_THRESHOLD || evAway >= EV_THRESHOLD) {
+                    if (evHome > evAway) { ev = evHome; prediction = 'HOME'; } 
+                    else { ev = evAway; prediction = 'AWAY'; }
+                }
+                
+                const probs = { home: parseFloat((probHome * 100).toFixed(1)), away: parseFloat((probAway * 100).toFixed(1)), draw: 0 };
+                const odds = this.calculateOdds(probs);
+                const bet = this.getBetRecommendation(ev, probs, odds, MAX_STAKE_FRAC, false, EV_THRESHOLD);
+
+                return { probs, odds, ev, prediction, bet };
+            },
+
+            runTennisModel: function(event) {
+                const BETA = 0.035, ALPHA = -1.20;
+                const WEIGHTS = { ranking_differential: 0.20, surface_specialization: 0.15, service_return_balance: 0.15, recent_form: 0.10, head_to_head: 0.08, tournament_pressure: 0.05, match_format_edge: 0.04, round_importance: 0.04, altitude_adaptation: 0.04, fatigue_factor: 0.07, rest_advantage: 0.04, momentum_streak: 0.03, closing_ability: 0.01 };
+                const sigmoid = (x) => 1 / (1 + Math.exp(-(BETA * x + ALPHA)));
+                
+                const createPlayerMetrics = (playerName) => {
+                    const hash = s => s.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                    const seed = Math.abs(hash(playerName));
+                    const pseudoRandom = (s, min, max) => min + ((Math.sin(s) * 10000) % 1) * (max - min);
+                    return {
+                        ranking: Math.round(pseudoRandom(seed, 1, 200)), surface_wins: Math.round(pseudoRandom(seed+1, 3, 8)),
+                        service_won: pseudoRandom(seed+2, 0.75, 0.90), return_won: pseudoRandom(seed+3, 0.10, 0.25),
+                        recent_wins: Math.round(pseudoRandom(seed+4, 2, 5)), sets_played: Math.round(pseudoRandom(seed+5, 20, 50)),
+                        days_rest: Math.round(pseudoRandom(seed+6, 1, 5)), titles: Math.round(pseudoRandom(seed+7, 0, 10)),
+                        finals: Math.round(pseudoRandom(seed+8, 1, 15)),
+                    };
+                };
+
+                const p1_metrics = createPlayerMetrics(event.strHomeTeam);
+                const p2_metrics = createPlayerMetrics(event.strAwayTeam);
+
+                const features = {
+                    ranking_differential: (p2_metrics.ranking - p1_metrics.ranking) / 100,
+                    surface_specialization: (p1_metrics.surface_wins - p2_metrics.surface_wins) / 5,
+                    service_return_balance: ((p1_metrics.service_won - p2_metrics.return_won) - (p2_metrics.service_won - p1_metrics.return_won)),
+                    recent_form: (p1_metrics.recent_wins - p2_metrics.recent_wins) / 3,
+                    fatigue_factor: (p2_metrics.sets_played - p1_metrics.sets_played) / 30,
+                    rest_advantage: (p1_metrics.days_rest - p2_metrics.days_rest) / 4,
+                    closing_ability: ((p1_metrics.titles / (p1_metrics.finals||1)) - (p2_metrics.titles / (p2_metrics.finals||1))) * 2
+                };
+                
+                let weighted_index = Object.keys(WEIGHTS).reduce((sum, key) => sum + (features[key] || 0) * WEIGHTS[key], 0);
+                let prob1 = sigmoid(weighted_index), prob2 = 1 - prob1;
+
+                const maxp = Math.max(prob1, prob2);
+                if (maxp >= 0.52 && maxp <= 0.58) {
+                    const penalty = 0.03;
+                    if (prob1 > prob2) { prob1 = Math.max(0.5, prob1 - penalty); prob2 = 1 - prob1; } 
+                    else { prob2 = Math.max(0.5, prob2 - penalty); prob1 = 1 - prob2; }
+                }
+
+                const probs = { home: parseFloat((prob1 * 100).toFixed(1)), away: parseFloat((prob2 * 100).toFixed(1)), draw: 0 };
+                const odds = this.calculateOdds(probs);
+                const ev = this.calculateEV(probs, odds);
+                const bet = this.getBetRecommendation(ev, probs, odds);
+                
+                return { probs, odds, ev, prediction: this.getPrediction(probs), bet };
+            },
+
+            // --- FUNCIONES COMUNES DE ANÁLISIS ---
+            getPrediction: function(probs) {
+                const maxProb = Math.max(probs.home, probs.away, probs.draw || 0);
+                if (maxProb === probs.home) return 'HOME';
+                if (maxProb === probs.away) return 'AWAY';
+                return 'DRAW';
+            },
+
+            calculateOdds: function(probs) {
+                const margin = 0.95;
+                const homeOdds = probs.home > 0 ? parseFloat((1 / (probs.home / 100)) * margin).toFixed(2) : 0;
+                const awayOdds = probs.away > 0 ? parseFloat((1 / (probs.away / 100)) * margin).toFixed(2) : 0;
+                const drawOdds = probs.draw > 0 ? parseFloat((1 / (probs.draw / 100)) * margin).toFixed(2) : 0;
+                
+                let display = `${homeOdds}`;
+                if (drawOdds > 0) display += ` / ${drawOdds}`;
+                display += ` / ${awayOdds}`;
+                
+                return { home: homeOdds, away: awayOdds, draw: drawOdds, display };
+            },
+
+            calculateEV: function(probs, odds) {
+                const prediction = this.getPrediction(probs);
+                let trueProb, bestOdds;
+                if (prediction === 'HOME') { trueProb = probs.home / 100; bestOdds = odds.home; }
+                else if (prediction === 'AWAY') { trueProb = probs.away / 100; bestOdds = odds.away; }
+                else { trueProb = probs.draw / 100; bestOdds = odds.draw; }
+                
+                return (trueProb * bestOdds) - 1;
+            },
+
+            getBetRecommendation: function(ev, probs, odds, maxStakeFrac = 0.5, useEVsquared = false, minEV = 0.02) {
+                const prediction = this.getPrediction(probs);
+                
+                if (ev >= minEV) {
+                    const oddsValue = parseFloat(odds[prediction.toLowerCase()]);
+                    let stake;
+
+                    if(useEVsquared) {
+                        stake = App.getBankrollData().initial * (ev * ev) * 0.5;
+                    } else {
+                        const kellyFraction = oddsValue > 1 ? ev / (oddsValue - 1) : 0;
+                        stake = App.getBankrollData().initial * kellyFraction * 0.5;
+                    }
+                    
+                    stake = Math.min(stake, App.getBankrollData().initial * maxStakeFrac);
+                    return { pick: prediction, stake: Math.max(1, stake) };
+                }
+                return { pick: 'NO_BET', stake: 0 };
+            }
+        };
+
+        // =================================================================================
+        // --- 🌐 MANEJADOR DE API (API_HANDLER) ---
+        // =================================================================================
+        const API_HANDLER = {
+            
+            loadFreeData: async function() {
+                UI_CONTROLLER.showLoading(true);
+                UI_CONTROLLER.updateCurrentDate();
+                try {
+                    const period = App.getFilters().period;
+                    const selectedSport = App.getFilters().sport;
+                    
+                    let datesToFetch = [];
+                    if (period === 'daily') {
+                        datesToFetch.push(App.getFilters().date);
+                    } else {
+                        const days = period === 'weekly' ? 7 : 15;
+                        for (let i = 0; i < days; i++) {
+                            const date = new Date();
+                            date.setDate(date.getDate() + i);
+                            datesToFetch.push(date.toISOString().split('T')[0]);
+                        }
+                    }
+
+                    const sportsToFetch = selectedSport === 'all' ? App.getAllSports() : [selectedSport];
+                    let allEndpoints = [];
+                    datesToFetch.forEach(date => {
+                        sportsToFetch.forEach(sport => {
+                            allEndpoints.push(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${sport.replace(' ', '%20')}`);
+                        });
+                    });
+
+                    const responses = await Promise.all(allEndpoints.map(url => fetch(url).catch(err => ({ ok: false }))));
+                    
+                    let allEvents = [];
+                    for (const response of responses) {
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data && data.events) {
+                                allEvents.push(...data.events);
+                            }
+                        }
+                    }
+
+                    const uniqueEventsMap = new Map();
+                    allEvents.forEach(event => {
+                        uniqueEventsMap.set(event.idEvent, event);
+                    });
+                    const uniqueEvents = Array.from(uniqueEventsMap.values());
+
+                    if (uniqueEvents.length > 0) {
+                        App.processEvents(uniqueEvents);
+                        UI_CONTROLLER.updateDataSource('Datos reales de TheSportsDB');
+                        UI_CONTROLLER.showToast('Análisis con datos reales completado.', 'success');
+                    } else {
+                        throw new Error('No se encontraron partidos para la selección actual.');
+                    }
+                } catch (error) {
+                    UI_CONTROLLER.showError(error.message);
+                    App.processEvents([]);
+                } finally {
+                    UI_CONTROLLER.showLoading(false);
+                }
+            },
+
+            connectAPI: function() {
+                const apiKey = App.getApiKey();
+                if (!apiKey) {
+                    UI_CONTROLLER.showToast('Por favor, ingresa tu API key', 'error');
+                    return;
+                }
+                UI_CONTROLLER.showLoading(true);
+                UI_CONTROLLER.updateCurrentDate();
+                setTimeout(() => {
+                    try {
+                        const simulatedData = [
+                            { idEvent: "12345", strHomeTeam: 'Manchester United', strAwayTeam: 'Liverpool', strSport: 'Soccer', strStatus: 'Not Started', dateEvent: new Date().toISOString().split('T')[0] },
+                        ];
+                        App.processEvents(simulatedData);
+                        UI_CONTROLLER.updateDataSource(`Datos de API Premium`);
+                        UI_CONTROLLER.showToast('API Premium conectada (simulado).', 'success');
+                    } catch (error) {
+                        UI_CONTROLLER.showError('API key inválida o límite excedido.');
+                        this.loadFreeData();
+                    } finally {
+                        UI_CONTROLLER.showLoading(false);
+                    }
+                }, 1000);
+            }
+        };
+
+        // =================================================================================
+        // --- 🖥️ CONTROLADOR DE UI (UI_CONTROLLER) ---
+        // =================================================================================
+        const UI_CONTROLLER = {
+            elements: {
+                currentDate: document.getElementById('current-date'),
+                apiConfig: document.getElementById('api-config'),
+                apiKeyInput: document.getElementById('api-key'),
+                loading: document.getElementById('loading'),
+                error: document.getElementById('error'),
+                noMatches: document.getElementById('no-matches'),
+                matchesGrid: document.getElementById('matches-grid'),
+                bankrollTitle: document.getElementById('bankroll-title'),
+                bankrollSection: document.getElementById('bankroll-section'),
+                summarySection: document.getElementById('summary-section'),
+                dataSource: document.getElementById('data-source'),
+                toast: document.getElementById('toast'),
+                currentBankroll: document.getElementById('current-bankroll'),
+                viableBets: document.getElementById('viable-bets'),
+                drawdown: document.getElementById('drawdown'),
+                totalStake: document.getElementById('total-stake'),
+                periodSelector: document.getElementById('period-selector'),
+                dateSelector: document.getElementById('date-selector'),
+                sportSelector: document.getElementById('sport-selector'),
+            },
+
+            initializeFilters: function() {
+                const today = new Date();
+                this.elements.dateSelector.value = today.toISOString().split('T')[0];
+                this.updateCurrentDate(today);
+                this.elements.dataSource.textContent = 'En espera de análisis.';
+            },
+
+            handlePeriodChange: function() {
+                const isDaily = this.elements.periodSelector.value === 'daily';
+                this.elements.dateSelector.disabled = !isDaily;
+                this.updateCurrentDate();
+            },
+
+            updateCurrentDate: function(date) {
+                const period = this.elements.periodSelector.value;
+                if (period === 'daily') {
+                    const displayDate = date || new Date(this.elements.dateSelector.value);
+                    const timezoneOffset = displayDate.getTimezoneOffset() * 60000;
+                    const adjustedDate = new Date(displayDate.getTime() + timezoneOffset);
+                    this.elements.currentDate.textContent = adjustedDate.toLocaleDateString('es-ES', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                } else {
+                    const days = period === 'weekly' ? 7 : 15;
+                    const startDate = new Date();
+                    const endDate = new Date();
+                    endDate.setDate(startDate.getDate() + (days - 1));
+                    this.elements.currentDate.textContent = `del ${startDate.toLocaleDateString('es-ES')} al ${endDate.toLocaleDateString('es-ES')}`;
+                }
+            },
+
+            showLoading: function(show) {
+                this.elements.loading.style.display = show ? 'block' : 'none';
+                if (show) {
+                    this.elements.matchesGrid.innerHTML = '';
+                    this.elements.error.style.display = 'none';
+                    this.elements.noMatches.style.display = 'none';
+                    this.elements.bankrollSection.style.display = 'none';
+                    this.elements.bankrollTitle.style.display = 'none';
+                }
+            },
+
+            showError: function(message) {
+                let displayMessage = `❌ ${message}`;
+                if (message.includes('No se encontraron partidos')) {
+                    displayMessage = `🤷 No se encontraron partidos. Esto es común en APIs gratuitas para fechas futuras. Por favor, intenta con el día de hoy.`;
+                }
+                this.elements.error.textContent = displayMessage;
+                this.elements.error.style.display = 'block';
+            },
+
+            showToast: function(message, type = 'info') {
+                this.elements.toast.textContent = message;
+                this.elements.toast.className = `toast show ${type}`;
+                setTimeout(() => {
+                    this.elements.toast.className = 'toast';
+                }, 3000);
+            },
+
+            toggleAPIConfig: function() {
+                const isHidden = this.elements.apiConfig.style.display === 'none' || this.elements.apiConfig.style.display === '';
+                this.elements.apiConfig.style.display = isHidden ? 'block' : 'none';
+            },
+
+            renderUI: function(matches) {
+                this.elements.matchesGrid.innerHTML = '';
+                if (matches.length === 0) {
+                    this.elements.noMatches.querySelector('p').textContent = '🤷 No se encontraron partidos para la selección actual.';
+                    this.elements.noMatches.style.display = 'block';
+                    this.elements.bankrollSection.style.display = 'none';
+                    this.elements.bankrollTitle.style.display = 'none';
+                    return;
+                }
+
+                this.elements.noMatches.style.display = 'none';
+                matches.forEach(match => {
+                    const card = this.createMatchCard(match);
+                    this.elements.matchesGrid.appendChild(card);
+                });
+
+                this.updateMetricsAndSummary(matches);
+                this.elements.bankrollSection.style.display = 'block';
+                this.elements.bankrollTitle.style.display = 'block';
+            },
+
+            createMatchCard: function(match) {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const sportIcon = this.getSportIcon(match.sport);
+                const matchDate = new Date(match.date.replace(/-/g, '/')).toLocaleDateString('es-ES', {
+                    weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+                });
+                const isNoBet = match.bet.pick === 'NO_BET';
+
+                let probabilitiesHTML = `
+                    <div class="prob-item">
+                        <div class="value">${match.probs.home}%</div>
+                        <div class="label">${match.sport === 'Tennis' ? 'Jugador 1' : 'Local'}</div>
+                    </div>
+                `;
+                if (match.probs.draw > 0) {
+                    probabilitiesHTML += `
+                    <div class="prob-item">
+                        <div class="value">${match.probs.draw}%</div>
+                        <div class="label">Empate</div>
+                    </div>`;
+                }
+                probabilitiesHTML += `
+                    <div class="prob-item">
+                        <div class="value">${match.probs.away}%</div>
+                        <div class="label">${match.sport === 'Tennis' ? 'Jugador 2' : 'Visitante'}</div>
+                    </div>
+                `;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="sport-icon">${sportIcon}</div>
+                        <div class="team-info">
+                            <div class="team-names">${match.homeTeam} vs ${match.awayTeam}</div>
+                            <div class="match-date">${matchDate}</div>
+                        </div>
+                    </div>
+                    <div class="probabilities">${probabilitiesHTML}</div>
+                    <div class="card-footer">
+                        <strong>Predicción:</strong> 
+                        <span class="tag ${match.probs.alta_flag ? 'tag-alta' : ''}">${match.prediction} ${match.probs.alta_flag ? '(ALTA)' : ''}</span>
+                        <div class="bet-info ${isNoBet ? 'no-value-bet' : ''}">
+                            <div class="bet-pick">Recomendación: <span>${isNoBet ? 'No Apostar' : match.bet.pick}</span></div>
+                            <div class="bet-details">
+                                <span>Odds: ${match.odds.display}</span>
+                                <span class="${match.ev > 0 ? 'ev-positive' : 'no-bet'}">EV: ${match.ev > 0 ? '+' : ''}${match.ev.toFixed(3)}</span>
+                                <span>Stake: $${match.bet.stake.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return card;
+            },
+
+            updateMetricsAndSummary: function(matches) {
+                const bankrollData = App.getBankrollData();
+                const viableMatches = matches.filter(m => m.bet.stake > 0);
+                const viableBetsCount = viableMatches.length;
+                const totalStake = viableMatches.reduce((sum, match) => sum + match.bet.stake, 0);
+
+                const sportSummary = {};
+                matches.forEach(match => {
+                    if (!sportSummary[match.sport]) {
+                        sportSummary[match.sport] = { count: 0 };
+                    }
+                    sportSummary[match.sport].count++;
+                });
+                
+                const currentBankroll = bankrollData.initial - totalStake;
+                const drawdown = bankrollData.maximum > currentBankroll ? (1 - currentBankroll / bankrollData.maximum) * 100 : 0;
+                
+                this.elements.currentBankroll.textContent = `$${currentBankroll.toFixed(2)}`;
+                this.elements.viableBets.textContent = viableBetsCount;
+                this.elements.totalStake.textContent = `$${totalStake.toFixed(2)}`;
+                this.elements.drawdown.textContent = `${drawdown.toFixed(1)}%`;
+
+                this.elements.summarySection.innerHTML = '';
+                for (const sport in sportSummary) {
+                    const summary = sportSummary[sport];
+                    const ul = document.createElement('ul');
+                    ul.style.marginTop = '1rem';
+                    ul.innerHTML = `
+                        <li><span><strong>${this.getSportIcon(sport)} ${sport}</strong></span> <span>${summary.count} ${summary.count > 1 ? 'partidos' : 'partido'}</span></li>
+                    `;
+                    this.elements.summarySection.appendChild(ul);
+                }
+            },
+
+            updateDataSource: function(sourceText) {
+                this.elements.dataSource.textContent = sourceText;
+            },
+            
+            getSportIcon: function(sport) {
+                const icons = {
+                    'Soccer': '⚽', 'Basketball': '🏀', 'American Football': '🏈',
+                    'Baseball': '⚾', 'Tennis': '🎾'
+                };
+                return icons[sport] || '🏅';
+            }
+        };
+
+        // =================================================================================
+        // --- 🚀 NÚCLEO DE LA APLICACIÓN (App) ---
+        // =================================================================================
+        const App = {
+            currentMatches: [],
+            apiKey: '',
+            bankrollData: {
+                initial: 1000,
+                current: 1000,
+                maximum: 1000,
+                drawdown: 0
+            },
+            
+            init: function() {
+                UI_CONTROLLER.initializeFilters();
+                
+                UI_CONTROLLER.elements.periodSelector.addEventListener('change', () => UI_CONTROLLER.handlePeriodChange());
+                UI_CONTROLLER.elements.dateSelector.addEventListener('change', () => UI_CONTROLLER.updateCurrentDate());
+            },
+
+            getBankrollData: function() { return this.bankrollData; },
+            getApiKey: function() { return UI_CONTROLLER.elements.apiKeyInput.value.trim(); },
+            getAllSports: () => ['Soccer', 'Basketball', 'American Football', 'Baseball', 'Tennis'],
+            getFilters: function() {
+                return {
+                    period: UI_CONTROLLER.elements.periodSelector.value,
+                    date: UI_CONTROLLER.elements.dateSelector.value,
+                    sport: UI_CONTROLLER.elements.sportSelector.value
+                };
+            },
+
+            refreshData: function() {
+                UI_CONTROLLER.showToast('Conectando para obtener datos reales...', 'info');
+                this.apiKey = this.getApiKey();
+                if (this.apiKey) {
+                    API_HANDLER.connectAPI();
+                } else {
+                    API_HANDLER.loadFreeData();
+                }
+            },
+
+            connectAPI: function() {
+                this.apiKey = this.getApiKey();
+                API_HANDLER.connectAPI();
+            },
+
+            connectRapidAPI: function() {
+                const rapidApiKey = document.getElementById('rapidapi-key').value.trim();
+                if (!rapidApiKey) {
+                    UI_CONTROLLER.showToast('Por favor, ingresa tu RapidAPI key', 'error');
+                    return;
+                }
+                UI_CONTROLLER.showToast('RapidAPI conectada (simulado).', 'success');
+            },
+
+            processEvents: function(events) {
+                this.currentMatches = events.map(event => ANALYSIS_ENGINE.analyzeMatch(event));
+                UI_CONTROLLER.renderUI(this.currentMatches);
+            },
+
+            generateReport: function() {
+                const viableMatches = this.currentMatches.filter(match => match.bet.stake > 0);
+                if (viableMatches.length === 0) {
+                    UI_CONTROLLER.showToast('No hay apuestas viables para generar un reporte.', 'error');
+                    return;
+                }
+
+                const totalStake = viableMatches.reduce((sum, match) => sum + match.bet.stake, 0);
+                const potentialReturn = viableMatches.reduce((sum, match) => sum + (match.bet.stake * parseFloat(match.odds[match.bet.pick.toLowerCase()])), 0);
+                const remainingBankroll = this.bankrollData.initial - totalStake;
+
+                const detailedResultsRows = viableMatches.map(match => {
+                    const pick = match.bet.pick;
+                    const prob = match.probs[pick.toLowerCase()];
+                    const odd = match.odds[pick.toLowerCase()];
+                    const stake = match.bet.stake;
+                    const potRetorno = stake * odd;
+                    return `
+                        <tr>
+                            <td>${new Date(match.date.replace(/-/g, '/')).toLocaleDateString('es-ES')}</td>
+                            <td>${match.homeTeam}</td>
+                            <td>${match.awayTeam}</td>
+                            <td>${prob}%</td>
+                            <td>${odd}</td>
+                            <td>${match.ev.toFixed(3)}</td>
+                            <td>$${stake.toFixed(2)}</td>
+                            <td>$${potRetorno.toFixed(2)}</td>
+                        </tr>
+                    `
+                }).join('');
+                
+                const stakeBySport = {};
+                viableMatches.forEach(match => {
+                    if (!stakeBySport[match.sport]) {
+                        stakeBySport[match.sport] = 0;
+                    }
+                    stakeBySport[match.sport] += match.bet.stake;
+                });
+                const chartLabels = Object.keys(stakeBySport);
+                const chartData = Object.values(stakeBySport);
+                const chartColors = ['#e94560', '#0f3460', '#28a745', '#ff9800', '#6f42c1', '#6610f2'];
+
+                const reportHTML = `
+                    <html>
+                    <head>
+                        <title>Reporte de Análisis Deportivo</title>
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+                        <style>
+                            body { font-family: 'Roboto', sans-serif; margin: 0; padding: 25px; background-color: #f4f7f9; color: #333; }
+                            .report-container { max-width: 1000px; margin: auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+                            h1, h2, h3 { color: #1a1a2e; border-bottom: 2px solid #e94560; padding-bottom: 10px; margin-top: 30px; }
+                            h1 { text-align: center; border: none; font-size: 28px; }
+                            .header-sub { text-align: center; color: #555; margin-top: -10px; margin-bottom: 30px; font-size: 16px; }
+                            .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; margin-bottom: 30px; }
+                            .summary-item { background-color: #f0f4f7; padding: 20px; border-radius: 8px; }
+                            .summary-item .label { font-size: 14px; color: #555; margin-bottom: 8px; }
+                            .summary-item .value { font-size: 24px; font-weight: 700; }
+                            .win { color: #28a745; }
+                            .loss { color: #f44336; }
+                            .section { margin-top: 40px; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+                            th { background-color: #16213e; color: #fff; }
+                            tr:nth-child(even) { background-color: #f9f9f9; }
+                            @media print {
+                                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; margin:0; }
+                                .report-container { box-shadow: none; border-radius: 0; }
+                                .no-print { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="report-container">
+                            <h1>INFORME DE APUESTAS DEPORTIVAS</h1>
+                            <p class="header-sub">Análisis Predictivo para el período: ${UI_CONTROLLER.elements.currentDate.textContent}</p>
+                            
+                            <h2>1. RESUMEN EJECUTIVO</h2>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <div class="label">APUESTAS VIABLES</div>
+                                    <div class="value">${viableMatches.length}</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="label">STAKE TOTAL</div>
+                                    <div class="value">$${totalStake.toFixed(2)}</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="label">RETORNO POTENCIAL</div>
+                                    <div class="value win">$${potentialReturn.toFixed(2)}</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="label">BANKROLL RESTANTE</div>
+                                    <div class="value">$${remainingBankroll.toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            <div class="section">
+                                <h3>2. DISTRIBUCIÓN DE STAKE</h3>
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+
+                            <div class="section">
+                                <h2>3. PROYECCIONES DETALLADAS</h2>
+                                <table>
+                                    <thead><tr><th>FECHA</th><th>LOCAL</th><th>VISITANTE</th><th>PROB.</th><th>ODD</th><th>EV</th><th>STAKE</th><th>RETORNO POT.</th></tr></thead>
+                                    <tbody>${detailedResultsRows}</tbody>
+                                </table>
+                            </div>
+                             <p style="text-align:center; margin-top:40px; color: #777; font-size:12px;" class="no-print">Este es un reporte generado por SUAD v2.0.</p>
+                        </div>
+                        <script>
+                            const ctx = document.getElementById('performanceChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ${JSON.stringify(chartLabels)},
+                                    datasets: [{
+                                        label: 'Stake por Deporte ($)',
+                                        data: ${JSON.stringify(chartData)},
+                                        backgroundColor: ${JSON.stringify(chartColors)},
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: { position: 'top' },
+                                        title: { display: true, text: 'Distribución de Stake por Deporte' }
+                                    }
+                                }
+                            });
+                            setTimeout(() => window.print(), 500);
+                        <\/script>
+                    </body>
+                    </html>
+                `;
+
+                const reportWindow = window.open('', '_blank');
+                reportWindow.document.write(reportHTML);
+                reportWindow.document.close();
+            }
+        };
+
+        // Iniciar la aplicación
+        document.addEventListener('DOMContentLoaded', () => App.init());
+
+    </script>
+</body>
+</html>
